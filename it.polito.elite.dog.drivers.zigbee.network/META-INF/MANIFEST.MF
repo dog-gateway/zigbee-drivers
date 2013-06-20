@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ZigBeeNetworkDriver
+Bundle-SymbolicName: it.polito.elite.dog.drivers.zigbee.network
+Bundle-Version: 1.0.0
+Bundle-Vendor: eLite - Politecnico di Torino (http://elite.polito.it)
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Service-Component: OSGI-INF/component.xml
+Import-Package: it.polito.elite.domotics.dog2.doglibrary.util,
+ it.telecomitalia.ah.cluster.zigbee.general;version="3.1.0",
+ it.telecomitalia.ah.cluster.zigbee.metering;version="3.1.0",
+ it.telecomitalia.ah.hac;version="3.0.2",
+ org.osgi.framework,
+ org.osgi.service.cm;version="1.4.0",
+ org.osgi.service.log;version="1.3.0"
