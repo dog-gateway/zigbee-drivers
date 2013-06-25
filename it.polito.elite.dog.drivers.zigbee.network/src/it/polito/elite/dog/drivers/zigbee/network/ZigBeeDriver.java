@@ -32,7 +32,7 @@ public abstract class ZigBeeDriver
 {
 	// The appliance managed by the specific implementation of ZigBee device
 	// driver
-	private ZigBeeApplianceInfo theManagedAppliance;
+	protected ZigBeeApplianceInfo theManagedAppliance;
 	
 	// a reference to the network driver interface to allow network-level access
 	// for sub-classes
@@ -58,6 +58,10 @@ public abstract class ZigBeeDriver
 		
 		// store a reference to the associate device
 		this.device = device;
+		
+		//initialize datastructures
+		this.notifications = new HashMap<String, CmdNotificationInfo>();
+		this.commands = new HashMap<String, CmdNotificationInfo>();
 		
 		// fill the data structures depending on the specific device
 		// configuration parameters

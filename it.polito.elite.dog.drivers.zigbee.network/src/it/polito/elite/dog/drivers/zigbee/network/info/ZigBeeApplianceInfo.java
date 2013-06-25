@@ -172,6 +172,6 @@ public class ZigBeeApplianceInfo
 	{
 		// extract the device serial number (this might be frail...)
 		String appliancePid = appliance.getPid();
-		return appliancePid.substring(appliancePid.lastIndexOf('.'));
+		return appliancePid.substring(appliancePid.lastIndexOf('.')+1);
 	}
 }

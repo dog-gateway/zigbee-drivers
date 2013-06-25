@@ -29,6 +29,7 @@ import java.util.Dictionary;
 import java.util.HashMap;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.service.log.LogService;
@@ -44,6 +45,9 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 	// the bundle logger
 	private LogService logger;
 	
+	// the bundle context
+	private BundleContext context;
+	
 	// the log id
 	private static final String logId = "[ZigBeeNetworkDriver]: ";
 	
@@ -52,6 +56,9 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 	
 	// the serial/driver map
 	private HashMap<String, ZigBeeDriver> connectedDrivers;
+	
+	// the service registration handle
+	private ServiceRegistration<?> regServiceZigBeeNetwork;
 	
 	/**
 	 * Creates an instance of {@link ZigBeeNetworkDriver}, typically called
@@ -66,16 +73,26 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 	
 	public void activate(BundleContext context)
 	{
+		// store the bundle context
+		this.context = context;
+		
 		// initialize the class logger...
 		this.logger = new DogLogInstance(context);
 		
 		// debug: signal activation...
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Activated...");
+		
+		// register the service
+		this.registerNetworkService();
 	}
 	
 	public void deactivate()
 	{
-		// TODO: react to deactivation...
+		//unregister the service
+		this.unregisterNetworkService();
+		
+		// log
+		this.logger.log(LogService.LOG_INFO, ZigBeeNetworkDriver.logId + "Deactivated...");
 	}
 	
 	@Override
@@ -101,9 +118,6 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 		// debug
 		this.logger.log(LogService.LOG_INFO, ZigBeeNetworkDriver.logId + "Added appliance: \n" + applianceInfo);
 		
-		// trial, TODO: remove this upon onoff driver completion
-		this.checkCommands(appliance);
-		
 	}
 	
 	@Override
@@ -113,7 +127,8 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Appliance removed: "
 				+ appliance.getDescriptor().getFriendlyName());
 		
-		//TODO: update bound drivers (e.g., by removing the bound appliance info)
+		// TODO: update bound drivers (e.g., by removing the bound appliance
+		// info)
 		
 	}
 	
@@ -132,103 +147,73 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 			// update the appliance reference...
 			applianceInfo.setAppliance(appliance);
 			
+			// update the driver appliance binding
+			this.updateApplianceDriverBinding(serial);
+			
 			// debug
 			this.logger.log(LogService.LOG_INFO, ZigBeeNetworkDriver.logId + "Updated appliance: \n" + applianceInfo);
 		}
-		
-		// trial, TODO: remove this upon onoff driver completion
-		this.checkCommands(appliance);
 		
 	}
 	
 	@Override
 	public IAppliance addToNetworkDriver(String applianceSerial, ZigBeeDriver driver)
 	{
-		//add to the map of connected drivers
+		// add to the map of connected drivers
 		this.connectedDrivers.put(applianceSerial, driver);
 		
-		//check if the appliance already exists and if such, call back the driver method...
+		// check if the appliance already exists and if such, call back the
+		// driver method...
 		this.updateApplianceDriverBinding(applianceSerial);
 		
 		return null;
 	}
 	
-	private void checkCommands(IAppliance appliance)
+	
+	/**
+	 * Register this bundle as network driver
+	 */
+	private void registerNetworkService()
 	{
-		for (IEndPoint endpoint : appliance.getEndPoints())
+		if (this.regServiceZigBeeNetwork == null)
+			this.regServiceZigBeeNetwork = this.context.registerService(ZigBeeNetwork.class.getName(), this, null);
+		
+	}
+	
+	/**
+	 * Unregister this bundle 
+	 */
+	private void unregisterNetworkService()
+	{
+		
+		if(this.regServiceZigBeeNetwork!=null)
 		{
-			this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Endpoint type: " + endpoint.getType());
-			
-			// check endpoint
-			if (endpoint.getType().equals("ah.ep.zigbee.LoadControlDevice"))
-			{
-				OnOffServer onOff = (OnOffServer) endpoint.getServiceCluster(OnOffServer.class.getName());
-				
-				try
-				{
-					onOff.execToggle(this.connectedAppliances
-							.get(ZigBeeApplianceInfo.extractApplianceSerial(appliance)).getEndpoint()
-							.getDefaultRequestContext());
-					this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Toggled!");
-				}
-				catch (ApplianceException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				catch (ServiceClusterException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			else if (endpoint.getType().equals("ah.ep.zigbee.MeteringDevice"))
-			{
-				SimpleMeteringServer meter = (SimpleMeteringServer) endpoint
-						.getServiceCluster(SimpleMeteringServer.class.getName());
-				
-				try
-				{
-					int measure = meter.getIstantaneousDemand(this.connectedAppliances
-							.get(ZigBeeApplianceInfo.extractApplianceSerial(appliance)).getEndpoint()
-							.getDefaultRequestContext());
-					this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Measure: " + measure);
-				}
-				catch (ApplianceException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				catch (ServiceClusterException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			this.regServiceZigBeeNetwork.unregister();
 		}
 	}
 	
-	
 	/**
 	 * Updates the existing bindings between appliance and drivers
+	 * 
 	 * @param applianceSerial
 	 */
 	private void updateApplianceDriverBinding(String applianceSerial)
 	{
-		//get the associated appliance info, if any
+		// get the associated appliance info, if any
 		ZigBeeApplianceInfo applianceInfo = this.connectedAppliances.get(applianceSerial);
 		
-		//get the associated driver, if any
+		// get the associated driver, if any
 		ZigBeeDriver driver = this.connectedDrivers.get(applianceSerial);
 		
-		//notify the driver if an appliance is available with the given serial number
-		if((applianceInfo!=null)&&(driver!=null))
+		// notify the driver if an appliance is available with the given serial
+		// number
+		if ((applianceInfo != null) && (driver != null))
 		{
 			driver.setIAppliance(applianceInfo);
 		}
 		
 	}
-
+	
 	@Override
 	public ZigBeeApplianceInfo getZigBeeApplianceInfo(String applianceSerial)
 	{
@@ -240,6 +225,8 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 	{
 		// debug
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Updated configuration...");
+		
+		// register the service?
 		
 		// left for future uses...
 	}
