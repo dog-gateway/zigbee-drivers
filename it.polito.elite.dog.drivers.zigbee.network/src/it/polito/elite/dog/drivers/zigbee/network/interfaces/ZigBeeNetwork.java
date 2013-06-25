@@ -13,6 +13,7 @@
 package it.polito.elite.dog.drivers.zigbee.network.interfaces;
 
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.telecomitalia.ah.hac.IAppliance;
 
 /**
@@ -39,11 +40,11 @@ public interface ZigBeeNetwork
 	public IAppliance addToNetworkDriver(String applianceSerial, ZigBeeDriver driver);
 	
 	/**
-	 * Get the IAppliance object currently associated to the given serial
+	 * Get the {@link ZigBeeApplianceInfo} object currently associated to the given serial
 	 * number, if any, otherwise return null.
 	 * 
 	 * @param applianceSerial The serial number identifying the appliance
-	 * @return The corresponding IAppliance object if available or null
+	 * @return The corresponding {@link ZigBeeApplianceInfo} object if available or null
 	 */
-	public IAppliance getIAppliance(String applianceSerial);
+	public ZigBeeApplianceInfo getZigBeeApplianceInfo(String applianceSerial);
 }

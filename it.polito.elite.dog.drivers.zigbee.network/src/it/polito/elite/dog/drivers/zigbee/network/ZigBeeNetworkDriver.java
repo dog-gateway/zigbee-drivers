@@ -12,6 +12,7 @@
  */
 package it.polito.elite.dog.drivers.zigbee.network;
 
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.polito.elite.domotics.dog2.doglibrary.util.DogLogInstance;
 import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
@@ -33,6 +34,8 @@ import org.osgi.service.cm.ManagedService;
 import org.osgi.service.log.LogService;
 
 /**
+ * The network driver for devices based on the ZigBee network protocol
+ * 
  * @author bonino
  * 
  */
@@ -45,28 +48,34 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 	private static final String logId = "[ZigBeeNetworkDriver]: ";
 	
 	// the appliance / endpoint map
-	private HashMap<IAppliance, IApplicationEndPoint> applianceToEndpoint;
+	private HashMap<String, ZigBeeApplianceInfo> connectedAppliances;
+	
+	// the serial/driver map
+	private HashMap<String, ZigBeeDriver> connectedDrivers;
 	
 	/**
-	 * 
+	 * Creates an instance of {@link ZigBeeNetworkDriver}, typically called
+	 * before activation.
 	 */
 	public ZigBeeNetworkDriver()
 	{
 		// init data structures
-		this.applianceToEndpoint = new HashMap<IAppliance, IApplicationEndPoint>();
+		this.connectedAppliances = new HashMap<String, ZigBeeApplianceInfo>();
+		this.connectedDrivers = new HashMap<String, ZigBeeDriver>();
 	}
 	
 	public void activate(BundleContext context)
 	{
+		// initialize the class logger...
 		this.logger = new DogLogInstance(context);
 		
-		// debug
+		// debug: signal activation...
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Activated...");
 	}
 	
 	public void deactivate()
 	{
-		
+		// TODO: react to deactivation...
 	}
 	
 	@Override
@@ -77,30 +86,24 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 	}
 	
 	@Override
-	public void notifyApplianceAdded(IApplicationEndPoint endPoint, IAppliance appliance)
+	public void notifyApplianceAdded(IApplicationEndPoint endpoint, IAppliance appliance)
 	{
+		
+		// create a ZigBeeApplianceInfo object representing the appliance
+		ZigBeeApplianceInfo applianceInfo = new ZigBeeApplianceInfo(endpoint, appliance);
+		
+		// store the appliance info
+		this.connectedAppliances.put(applianceInfo.getSerial(), applianceInfo);
+		
+		// update any already connected drivers
+		this.updateApplianceDriverBinding(applianceInfo.getSerial());
+		
 		// debug
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Appliance added: "
-				+ appliance.getDescriptor().getFriendlyName() + " Pid: " + appliance.getPid());
+		this.logger.log(LogService.LOG_INFO, ZigBeeNetworkDriver.logId + "Added appliance: \n" + applianceInfo);
 		
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Appliance endpoints: ");
-		
-		for (String endpointType : appliance.getEndPointTypes())
-		{
-			this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Endpoint type: " + endpointType);
-		}
-		
-		// store the couple appliance endpoint
-		applianceToEndpoint.put(appliance, endPoint);
-		
+		// trial, TODO: remove this upon onoff driver completion
 		this.checkCommands(appliance);
 		
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Application endpoint: ");
-		
-		for (String clusterName : endPoint.getServiceClusterNames())
-		{
-			this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "ClusterName: " + clusterName);
-		}
 	}
 	
 	@Override
@@ -110,19 +113,44 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Appliance removed: "
 				+ appliance.getDescriptor().getFriendlyName());
 		
+		//TODO: update bound drivers (e.g., by removing the bound appliance info)
+		
 	}
 	
 	@Override
 	public void notifyApplianceAvailabilityUpdated(IAppliance appliance)
 	{
-		// debug
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Appliance updated: "
-				+ appliance.getDescriptor().getFriendlyName());
+		// get the appliance serial number
+		String serial = ZigBeeApplianceInfo.extractApplianceSerial(appliance);
 		
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Appliance updated endpoints: ");
+		// get the appliance from the set of connected appliances
+		ZigBeeApplianceInfo applianceInfo = this.connectedAppliances.get(serial);
 		
+		// check not null
+		if (applianceInfo != null)
+		{
+			// update the appliance reference...
+			applianceInfo.setAppliance(appliance);
+			
+			// debug
+			this.logger.log(LogService.LOG_INFO, ZigBeeNetworkDriver.logId + "Updated appliance: \n" + applianceInfo);
+		}
+		
+		// trial, TODO: remove this upon onoff driver completion
 		this.checkCommands(appliance);
 		
+	}
+	
+	@Override
+	public IAppliance addToNetworkDriver(String applianceSerial, ZigBeeDriver driver)
+	{
+		//add to the map of connected drivers
+		this.connectedDrivers.put(applianceSerial, driver);
+		
+		//check if the appliance already exists and if such, call back the driver method...
+		this.updateApplianceDriverBinding(applianceSerial);
+		
+		return null;
 	}
 	
 	private void checkCommands(IAppliance appliance)
@@ -138,7 +166,9 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 				
 				try
 				{
-					onOff.execToggle(this.applianceToEndpoint.get(appliance).getDefaultRequestContext());
+					onOff.execToggle(this.connectedAppliances
+							.get(ZigBeeApplianceInfo.extractApplianceSerial(appliance)).getEndpoint()
+							.getDefaultRequestContext());
 					this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Toggled!");
 				}
 				catch (ApplianceException e)
@@ -159,7 +189,8 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 				
 				try
 				{
-					int measure = meter.getIstantaneousDemand(this.applianceToEndpoint.get(appliance)
+					int measure = meter.getIstantaneousDemand(this.connectedAppliances
+							.get(ZigBeeApplianceInfo.extractApplianceSerial(appliance)).getEndpoint()
 							.getDefaultRequestContext());
 					this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Measure: " + measure);
 				}
@@ -177,18 +208,31 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 		}
 	}
 	
-	@Override
-	public IAppliance addToNetworkDriver(String applianceSerial, ZigBeeDriver driver)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
-	@Override
-	public IAppliance getIAppliance(String applianceSerial)
+	/**
+	 * Updates the existing bindings between appliance and drivers
+	 * @param applianceSerial
+	 */
+	private void updateApplianceDriverBinding(String applianceSerial)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		//get the associated appliance info, if any
+		ZigBeeApplianceInfo applianceInfo = this.connectedAppliances.get(applianceSerial);
+		
+		//get the associated driver, if any
+		ZigBeeDriver driver = this.connectedDrivers.get(applianceSerial);
+		
+		//notify the driver if an appliance is available with the given serial number
+		if((applianceInfo!=null)&&(driver!=null))
+		{
+			driver.setIAppliance(applianceInfo);
+		}
+		
+	}
+
+	@Override
+	public ZigBeeApplianceInfo getZigBeeApplianceInfo(String applianceSerial)
+	{
+		return this.connectedAppliances.get(applianceSerial);
 	}
 	
 	@Override
@@ -197,23 +241,7 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Updated configuration...");
 		
-		// get the bundle configuration parameters
-		if (properties != null)
-		{
-			// try to get the baseline polling time
-			String pollingTimeAsString = (String) properties.get("pollingTimeMillis");
-			
-			// trim leading and trailing spaces
-			pollingTimeAsString = pollingTimeAsString.trim();
-			
-			// check not null
-			if (pollingTimeAsString != null)
-			{
-				// parse the string
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + pollingTimeAsString);
-			}
-		}
-		
+		// left for future uses...
 	}
 	
 }
