@@ -15,15 +15,12 @@ package it.polito.elite.dog.drivers.zigbee.network;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.polito.elite.domotics.dog2.doglibrary.util.DogLogInstance;
-import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
-import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
-import it.telecomitalia.ah.hac.ApplianceException;
 import it.telecomitalia.ah.hac.IAppliance;
 import it.telecomitalia.ah.hac.IApplicationEndPoint;
 import it.telecomitalia.ah.hac.IApplicationService;
-import it.telecomitalia.ah.hac.IEndPoint;
+import it.telecomitalia.ah.hac.IAttributeValue;
+import it.telecomitalia.ah.hac.IAttributeValuesListener;
 import it.telecomitalia.ah.hac.IServiceCluster;
-import it.telecomitalia.ah.hac.ServiceClusterException;
 
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -40,7 +37,7 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, ManagedService
+public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValuesListener, ZigBeeNetwork, ManagedService
 {
 	// the bundle logger
 	private LogService logger;
@@ -229,6 +226,21 @@ public class ZigBeeNetworkDriver implements IApplicationService, ZigBeeNetwork, 
 		// register the service?
 		
 		// left for future uses...
+	}
+
+	@Override
+	public void notifyAttributeValue(String appliancePid, Integer endPointId, String clusterName, String attributeName,
+			IAttributeValue attributeValue)
+	{
+		// debug
+		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId +"Received event from "+appliancePid+" name: "+attributeName+" value:"+attributeValue);
+		
+		// notify to the device-specific driver
+		String serial = ZigBeeApplianceInfo.extractApplianceSerial(appliancePid);
+		if((serial!= null) && (this.connectedDrivers.containsKey(serial)))
+		{
+			this.connectedDrivers.get(serial).newMessageFromHouse(endPointId, clusterName, attributeName, attributeValue);
+		}
 	}
 	
 }

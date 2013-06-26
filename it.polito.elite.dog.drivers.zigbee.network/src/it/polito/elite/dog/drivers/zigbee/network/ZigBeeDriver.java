@@ -19,6 +19,7 @@ import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.polito.elite.domotics.dog2.doglibrary.DogElementDescription;
 import it.polito.elite.domotics.dog2.doglibrary.devicecategory.ControllableDevice;
 import it.polito.elite.domotics.model.DeviceStatus;
+import it.telecomitalia.ah.hac.IAttributeValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +60,7 @@ public abstract class ZigBeeDriver
 		// store a reference to the associate device
 		this.device = device;
 		
-		//initialize datastructures
+		// initialize datastructures
 		this.notifications = new HashMap<String, CmdNotificationInfo>();
 		this.commands = new HashMap<String, CmdNotificationInfo>();
 		
@@ -105,6 +106,19 @@ public abstract class ZigBeeDriver
 	 * @param serial
 	 */
 	protected abstract void addToNetworkDriver(ZigBeeApplianceInfo appliance);
+	
+	/**
+	 * Notifies a new event detected on the network for the given cluster, on
+	 * the given endpoint. Device-specific driver implementations should take
+	 * care of message handling.
+	 * 
+	 * @param endPointId
+	 * @param clusterName
+	 * @param attributeName
+	 * @param attributeValue
+	 */
+	protected abstract void newMessageFromHouse(Integer endPointId, String clusterName, String attributeName,
+			IAttributeValue attributeValue);
 	
 	private void fillConfiguration()
 	{

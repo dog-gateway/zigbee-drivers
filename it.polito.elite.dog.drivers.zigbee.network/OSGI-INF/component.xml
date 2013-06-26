@@ -4,6 +4,7 @@
    <service>
       <provide interface="it.telecomitalia.ah.hac.IApplicationService"/>
       <provide interface="org.osgi.service.cm.ManagedService"/>
+      <provide interface="it.telecomitalia.ah.hac.IAttributeValuesListener"/>
    </service>
    <property name="service.pid" type="String" value="it.polito.elite.dog.drivers.zigbee.network"/>
 </scr:component>

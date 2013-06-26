@@ -174,4 +174,16 @@ public class ZigBeeApplianceInfo
 		String appliancePid = appliance.getPid();
 		return appliancePid.substring(appliancePid.lastIndexOf('.')+1);
 	}
+	
+	/**
+	 * Utility method for extracting the serial number of an appliance from the
+	 * IAppliance instance representing the ZigBee device
+	 * 
+	 * @param appliance
+	 * @return the serial number of the appliance
+	 */
+	public static String extractApplianceSerial(String appliancePid)
+	{
+		return appliancePid.substring(appliancePid.lastIndexOf('.')+1);
+	}
 }
