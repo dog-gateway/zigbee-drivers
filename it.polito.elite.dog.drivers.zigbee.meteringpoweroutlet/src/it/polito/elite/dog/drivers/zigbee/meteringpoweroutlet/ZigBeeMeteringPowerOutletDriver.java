@@ -152,7 +152,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + " Reporting time = " + this.reportingTime
 				+ "s");
 	}
-	
+
 	/**
 	 * Register this bundle as an OnOff device driver
 	 */

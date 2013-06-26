@@ -543,7 +543,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 			try
 			{
 				IEndPointRequestContext reqContext = this.theManagedAppliance.getEndpoint().getDefaultRequestContext();
-				cluster.setAttributeSubscription(OnOffServer.ATTR_OnOff_NAME, new SubscriptionParameters(0, 5000, 0),
+				cluster.setAttributeSubscription(OnOffServer.ATTR_OnOff_NAME, new SubscriptionParameters(0, 5, 0),
 						reqContext);
 			}
 			catch (ApplianceException e)
@@ -589,20 +589,20 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 				
 				ISubscriptionParameters acceptedParams = cluster.setAttributeSubscription(
 						SimpleMeteringServer.ATTR_CurrentSummationDelivered_NAME,
-						new SubscriptionParameters(5000, 5000, 0), reqContext);
+						new SubscriptionParameters(5, 5, 0), reqContext);
 				
 				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
-						+ acceptedParams);
+						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
 				
 				acceptedParams = cluster.setAttributeSubscription(SimpleMeteringServer.ATTR_IstantaneousDemand_NAME,
-						new SubscriptionParameters(5000, 5000, 0), reqContext);
+						new SubscriptionParameters(5, 5, 0), reqContext);
 				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
-						+ acceptedParams);
+						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
 				
 				acceptedParams = cluster.setAttributeSubscription(SimpleMeteringServer.ATTR_PowerFactor_NAME,
-						new SubscriptionParameters(5000, 5000, 0), reqContext);
+						new SubscriptionParameters(5, 5, 0), reqContext);
 				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
-						+ acceptedParams);
+						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
 				
 				// get the divisor needed to convert measured power to kW or kWh
 				IAttributeValue divisorValue = cluster.getAttributeValue(SimpleMeteringServer.ATTR_Divisor_NAME,
