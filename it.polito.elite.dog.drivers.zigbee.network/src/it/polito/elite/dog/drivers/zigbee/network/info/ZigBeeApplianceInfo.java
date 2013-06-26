@@ -140,8 +140,9 @@ public class ZigBeeApplianceInfo
 		StringBuffer applianceAsString = new StringBuffer();
 		
 		// the appliance friendly name
-		applianceAsString.append("Appliance fridely name: " + this.appliance.getDescriptor().getFriendlyName() + "\n");
+		applianceAsString.append("Appliance friendly name: " + this.appliance.getDescriptor().getFriendlyName() + "\n");
 		applianceAsString.append("Appliance PID: " + this.appliance.getPid() + "\n");
+		applianceAsString.append("Appliance serial: " + this.serial + "\n");
 		applianceAsString.append("Appliance endpoints:\n");
 		
 		for (String endpointType : this.appliance.getEndPointTypes())
