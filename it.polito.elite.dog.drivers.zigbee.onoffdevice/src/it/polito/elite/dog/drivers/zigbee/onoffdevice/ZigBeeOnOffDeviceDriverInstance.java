@@ -23,8 +23,11 @@ import it.polito.elite.domotics.model.statevalue.OffStateValue;
 import it.polito.elite.domotics.model.statevalue.OnStateValue;
 import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
 import it.telecomitalia.ah.hac.ApplianceException;
+import it.telecomitalia.ah.hac.IAttributeValue;
 import it.telecomitalia.ah.hac.IEndPoint;
+import it.telecomitalia.ah.hac.IServiceCluster;
 import it.telecomitalia.ah.hac.ServiceClusterException;
+import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
 
 /**
  * @author bonino
@@ -107,10 +110,11 @@ public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lam
 				this.onOffClusterServer.execOn(this.theManagedAppliance.getEndpoint().getDefaultRequestContext());
 				
 				// temporary shor-circuit for state update
-				this.changeCurrentState(OnOffState.ON);
+				// this.changeCurrentState(OnOffState.ON);
 				
-				//log the command
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId+" Sent OnCommand to the ZigBee device with serial "+this.theManagedAppliance.getSerial());
+				// log the command
+				this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId
+						+ " Sent OnCommand to the ZigBee device with serial " + this.theManagedAppliance.getSerial());
 			}
 			catch (ApplianceException e)
 			{
@@ -138,13 +142,14 @@ public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lam
 			try
 			{
 				// send the off command to the corresponding cluster
-				this.onOffClusterServer.execOff(this.theManagedAppliance.getEndpoint().getDefaultRequestContext(true));
+				this.onOffClusterServer.execOff(this.theManagedAppliance.getEndpoint().getDefaultRequestContext());
 				
 				// temporary shor-circuit for state update
-				this.changeCurrentState(OnOffState.OFF);
+				// this.changeCurrentState(OnOffState.OFF);
 				
-				//log the command
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId+" Sent OffCommand to the ZigBee device with serial "+this.theManagedAppliance.getSerial());
+				// log the command
+				this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId
+						+ " Sent OffCommand to the ZigBee device with serial " + this.theManagedAppliance.getSerial());
 			}
 			catch (ApplianceException e)
 			{
@@ -174,20 +179,6 @@ public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lam
 		
 	}
 	
-	@Override
-	protected void specificConfiguration()
-	{
-		// prepare the device state map
-		this.currentState = new DeviceStatus(device.getDeviceId());		
-	}
-	
-	@Override
-	protected void addToNetworkDriver(ZigBeeApplianceInfo appliance)
-	{
-		// add this driver instance to the network driver
-		this.network.addToNetworkDriver(appliance.getSerial(), this);
-	}
-	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -198,25 +189,81 @@ public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lam
 	@Override
 	public void setIAppliance(ZigBeeApplianceInfo appliance)
 	{
+		// call the superclass method
+		super.setIAppliance(appliance);
+		
 		// extract the OnOffCluster, if available
 		IEndPoint endpoints[] = appliance.getAppliance().getEndPoints();
 		
 		for (IEndPoint endpoint : endpoints)
 		{
 			// get the OnOff cluster
-			OnOffServer cluster = (OnOffServer) endpoint.getServiceCluster(OnOffServer.class.getName());
+			IServiceCluster cluster = endpoint.getServiceCluster(OnOffServer.class.getName());
 			
 			if (cluster != null)
 			{
 				// store the cluster
-				this.onOffClusterServer = cluster;
+				this.onOffClusterServer = (OnOffServer) cluster;
+				
+				// set the attribute subscription
+				try
+				{
+					cluster.setAttributeSubscription(OnOffServer.ATTR_OnOff_NAME, new SubscriptionParameters(0, 5000,
+							0), this.theManagedAppliance.getEndpoint().getDefaultRequestContext());
+				}
+				catch (ApplianceException e)
+				{
+					this.logger
+							.log(LogService.LOG_ERROR,
+									ZigBeeOnOffDeviceDriver.logId
+											+ "Error (ApplianceException) while sending setting subscription to the ZigBee appliance with serial: "
+											+ this.theManagedAppliance.getSerial(), e);
+				}
+				catch (ServiceClusterException e)
+				{
+					this.logger
+							.log(LogService.LOG_ERROR,
+									ZigBeeOnOffDeviceDriver.logId
+											+ "Error (ServiceClusterException) while setting subscription to the ZigBee appliance with serial: "
+											+ this.theManagedAppliance.getSerial(), e);
+				}
 				
 				// stop the iteration as the needed cluster has been found
 				break;
 			}
 		}
-		// call the superclass method
-		super.setIAppliance(appliance);
+	}
+	
+	@Override
+	protected void specificConfiguration()
+	{
+		// prepare the device state map
+		this.currentState = new DeviceStatus(device.getDeviceId());
+	}
+	
+	@Override
+	protected void addToNetworkDriver(ZigBeeApplianceInfo appliance)
+	{
+		// add this driver instance to the network driver
+		this.network.addToNetworkDriver(appliance.getSerial(), this);
+	}
+	
+	@Override
+	protected void newMessageFromHouse(Integer endPointId, String clusterName, String attributeName,
+			IAttributeValue attributeValue)
+	{
+		// handle OnOffCluster only...
+		if ((clusterName.equals(OnOffServer.class.getName())) && (attributeName.equals(OnOffServer.ATTR_OnOff_NAME)))
+		{
+			// translate true and false to on and off
+			boolean on = (Boolean) attributeValue.getValue();
+			
+			if (on)
+				this.changeCurrentState(OnOffState.ON);
+			else
+				this.changeCurrentState(OnOffState.OFF);
+		}
+		
 	}
 	
 	/**
@@ -235,26 +282,30 @@ public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lam
 	 * @param OnOffValue
 	 *            OnOffState.ON or OnOffState.OFF
 	 */
-	private void changeCurrentState(String OnOffValue)
+	private void changeCurrentState(String onOffValue)
 	{
 		String currentStateValue = (String) this.currentState.getState(OnOffState.class.getSimpleName())
 				.getCurrentStateValue()[0].getValue();
+		// debug
+		this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + "Received state :" + onOffValue);
+		
 		// if the current states it is different from the new state
-		if (!currentStateValue.equalsIgnoreCase(OnOffValue))
+		if (!currentStateValue.equalsIgnoreCase(onOffValue))
 		{
 			State newState;
 			// set the new state to on or off...
-			if (OnOffValue.equalsIgnoreCase(OnOffState.ON))
+			if (onOffValue.equalsIgnoreCase(OnOffState.ON))
 			{
-				newState = new OnOffState(new OffStateValue());
+				newState = new OnOffState(new OnStateValue());
 			}
 			else
 			{
-				newState = new OnOffState(new OnStateValue());
+				newState = new OnOffState(new OffStateValue());
 			}
 			// ... then set the new state for the device and throw a state
 			// changed notification
 			this.currentState.setState(newState.getStateName(), newState);
+			
 			this.notifyStateChanged(newState);
 		}
 		
