@@ -1,3 +1,15 @@
+/*
+ * Dog 2.0 - ZigBee MeteringPowerOutlet Driver
+ * 
+ * Copyright [2013] 
+ * [Dario Bonino (dario.bonino@polito.it), Politecnico di Torino] 
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed 
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License. 
+ */
 package it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet;
 
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
@@ -48,6 +60,11 @@ import javax.measure.unit.UnitFormat;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
+/**
+ * The metering power outlet driver instance which actually handles devices classifies as MeteringPowerOutlets, on ZigBee networks.
+ * @author bonino
+ *
+ */
 public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implements MeteringPowerOutlet
 {
 	// the class logger
@@ -63,6 +80,9 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 	private int divisor = 1;
 	private int multiplier = 1;
 	
+	// the reporting time to set
+	private int reportingTimeSeconds;
+	
 	/**
 	 * Creates an instance of device-specific driver associated to a given
 	 * device and using a given network driver
@@ -76,12 +96,15 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 	 *            instance.
 	 */
 	public ZigBeeMeteringPowerOutletDriverInstance(ZigBeeNetwork network, ControllableDevice device,
-			BundleContext context)
+			BundleContext context, int reportingTimeSeconds)
 	{
 		super(network, device);
 		
 		// create a logger
 		this.logger = new DogLogInstance(context);
+		
+		//initialize the reporting time
+		this.reportingTimeSeconds = reportingTimeSeconds;
 		
 		// read the initial state of devices
 		this.initializeStates();
@@ -526,6 +549,11 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 		
 	}
 	
+	/**
+	 * Attaches to OnOff notifications (on every state change and every <pre>reportingTimeSeconds</pre>
+	 * @param endpoint the endpoint for which trying to attach the notifications
+	 * @return true if successful, false otherwise
+	 */
 	private boolean attachOnOffCluster(IEndPoint endpoint)
 	{
 		// the success flag
@@ -539,11 +567,11 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 			// store the cluster
 			this.onOffClusterServer = (OnOffServer) cluster;
 			
-			// set the attribute subscription
+			// set the attribute subscription for on/off state changes
 			try
 			{
 				IEndPointRequestContext reqContext = this.theManagedAppliance.getEndpoint().getDefaultRequestContext();
-				cluster.setAttributeSubscription(OnOffServer.ATTR_OnOff_NAME, new SubscriptionParameters(0, 5, 0),
+				cluster.setAttributeSubscription(OnOffServer.ATTR_OnOff_NAME, new SubscriptionParameters(0, this.reportingTimeSeconds, 0),
 						reqContext);
 			}
 			catch (ApplianceException e)
@@ -569,6 +597,11 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 		return done;
 	}
 	
+	/**
+	 * Attaches to Meter notifications (every <pre>reportingTimeSeconds</pre>
+	 * @param endpoint the endpoint for which trying to attach the notifications
+	 * @return true if successful, false otherwise
+	 */
 	private boolean attachSimpleMeteringCluster(IEndPoint endpoint)
 	{
 		// the success flag
@@ -585,22 +618,28 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 			// set the attribute subscription
 			try
 			{
+				// get the request context to send attribute subscription requests 
 				IEndPointRequestContext reqContext = this.theManagedAppliance.getEndpoint().getDefaultRequestContext();
 				
+				//perform attribute subscription and get the accepted subscription parameters for active energy
 				ISubscriptionParameters acceptedParams = cluster.setAttributeSubscription(
 						SimpleMeteringServer.ATTR_CurrentSummationDelivered_NAME,
-						new SubscriptionParameters(5, 5, 0), reqContext);
-				
+						new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
+				//debug
 				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
 						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
 				
+				//perform attribute subscription and get the accepted subscription parameters for active power
 				acceptedParams = cluster.setAttributeSubscription(SimpleMeteringServer.ATTR_IstantaneousDemand_NAME,
-						new SubscriptionParameters(5, 5, 0), reqContext);
+						new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
+				//debug
 				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
 						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
 				
+				//perform attribute subscription and get the accepted subscription parameters for power factor
 				acceptedParams = cluster.setAttributeSubscription(SimpleMeteringServer.ATTR_PowerFactor_NAME,
-						new SubscriptionParameters(5, 5, 0), reqContext);
+						new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
+				//debug
 				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
 						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
 				

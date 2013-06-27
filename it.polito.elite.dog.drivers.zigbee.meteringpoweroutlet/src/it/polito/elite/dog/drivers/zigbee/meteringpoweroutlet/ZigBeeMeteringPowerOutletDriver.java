@@ -1,5 +1,14 @@
-/**
+/*
+ * Dog 2.0 - ZigBee MeteringPowerOutlet Driver
  * 
+ * Copyright [2013] 
+ * [Dario Bonino (dario.bonino@polito.it), Politecnico di Torino] 
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed 
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and limitations under the License. 
  */
 package it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet;
 
@@ -35,7 +44,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	private ZigBeeNetwork network;
 	
 	// the reporting time for onoff devices
-	private int reportingTime;
+	private int reportingTimeSeconds = 5; // default 5s
 	
 	// the registration object needed to handle the life span of this bundle in
 	// the OSGi framework (it is a ServiceRegistration object for use by the
@@ -71,9 +80,6 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 		this.logger = new DogLogInstance(context);
 		
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Activated...");
-		
-		// try to register the service
-		this.registerMeteringPowerOutletDriver();
 	}
 	
 	/**
@@ -99,7 +105,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 		this.unRegisterMeteringPowerOutletDriver();
 		
 		// null the network freeing the old reference for gc
-		//this.network = null;
+		// this.network = null;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -133,7 +139,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	{
 		// create a new driver instance
 		ZigBeeMeteringPowerOutletDriverInstance driverInstance = new ZigBeeMeteringPowerOutletDriverInstance(network,
-				(ControllableDevice) this.context.getService(reference), this.context);
+				(ControllableDevice) this.context.getService(reference), this.context, this.reportingTimeSeconds);
 		
 		// associate device and driver
 		((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
@@ -145,14 +151,20 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	@Override
 	public void updated(Dictionary<String, ?> configParams) throws ConfigurationException
 	{
-		// used to store polling policies
-		this.reportingTime = (Integer) configParams.get("reportingTimeSeconds");
-		
-		// debug
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + " Reporting time = " + this.reportingTime
-				+ "s");
+		if(configParams != null)
+		{
+			// used to store polling policies
+			this.reportingTimeSeconds = Integer.valueOf((String) configParams.get("reportingTimeSeconds"));
+			
+			// debug
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + " Reporting time = "
+					+ this.reportingTimeSeconds + "s");
+			
+			// try to register the service
+			this.registerMeteringPowerOutletDriver();
+		}
 	}
-
+	
 	/**
 	 * Register this bundle as an OnOff device driver
 	 */
