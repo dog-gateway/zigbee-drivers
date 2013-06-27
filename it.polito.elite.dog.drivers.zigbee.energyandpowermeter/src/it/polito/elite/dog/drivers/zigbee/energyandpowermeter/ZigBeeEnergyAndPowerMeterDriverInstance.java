@@ -104,7 +104,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 	}
 	
 	@Override
-	public DeviceStatus getState()
+	public synchronized DeviceStatus getState()
 	{
 		return this.currentState;
 	}
@@ -394,9 +394,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 						SimpleMeteringServer.ATTR_CurrentSummationDelivered_NAME, new SubscriptionParameters(
 								this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
 				// debug
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + "Subscription result:"
-						+ acceptedParams.getMinReportingInterval() + "," + acceptedParams.getMaxReportingInterval()
-						+ "," + acceptedParams.getReportableChange());
+				this.debugSubscription(acceptedParams);
 				
 				// perform attribute subscription and get the accepted
 				// subscription parameters for active power
@@ -405,9 +403,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 								new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0),
 								reqContext);
 				// debug
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + "Subscription result:"
-						+ acceptedParams.getMinReportingInterval() + "," + acceptedParams.getMaxReportingInterval()
-						+ "," + acceptedParams.getReportableChange());
+				this.debugSubscription(acceptedParams);
 				
 				// get the divisor needed to convert measured power to kW or kWh
 				IAttributeValue divisorValue = cluster.getAttributeValue(SimpleMeteringServer.ATTR_Divisor_NAME,
@@ -443,6 +439,21 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 		}
 		
 		return done;
+	}
+	
+	private void debugSubscription(ISubscriptionParameters acceptedParams)
+	{
+		// debug
+		if (this.logger != null)
+		{
+			if (acceptedParams != null)
+				this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + "Subscription result:"
+						+ acceptedParams.getMinReportingInterval() + "," + acceptedParams.getMaxReportingInterval()
+						+ "," + acceptedParams.getReportableChange());
+			else
+				this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId
+						+ "Subscripion not accepted");
+		}
 	}
 	
 }

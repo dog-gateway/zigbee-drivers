@@ -139,7 +139,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 	}
 	
 	@Override
-	public DeviceStatus getState()
+	public synchronized DeviceStatus getState()
 	{
 		return this.currentState;
 	}
@@ -406,11 +406,15 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 			if (attributeName.equals(SimpleMeteringServer.ATTR_IstantaneousDemand_NAME))
 			{
 				// active power notification
+				this.logger.log(LogService.LOG_DEBUG,ZigBeeMeteringPowerOutletDriver.logId+"Attribute Value =>"+attributeValue.getValue());
 				
 				// conversion as dictated by the metering cluster specification
 				int valueAsInt = (Integer) attributeValue.getValue();
+				this.logger.log(LogService.LOG_DEBUG,ZigBeeMeteringPowerOutletDriver.logId+"Value =>"+valueAsInt);
+				
 				double valueAskW = ((double) valueAsInt * (double) this.multiplier) / (double) this.divisor;
 				
+				this.logger.log(LogService.LOG_DEBUG,ZigBeeMeteringPowerOutletDriver.logId+"Value =>"+valueAskW);
 				// notify the new value
 				this.notifyNewActivePowerValue(DecimalMeasure.valueOf(valueAskW + " " + SI.KILO(SI.WATT).toString()));
 				
@@ -625,23 +629,21 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 				ISubscriptionParameters acceptedParams = cluster.setAttributeSubscription(
 						SimpleMeteringServer.ATTR_CurrentSummationDelivered_NAME,
 						new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
+				
 				//debug
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
-						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
+				this.debugSubscription(acceptedParams);
 				
 				//perform attribute subscription and get the accepted subscription parameters for active power
 				acceptedParams = cluster.setAttributeSubscription(SimpleMeteringServer.ATTR_IstantaneousDemand_NAME,
 						new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
 				//debug
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
-						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
+				this.debugSubscription(acceptedParams);
 				
 				//perform attribute subscription and get the accepted subscription parameters for power factor
 				acceptedParams = cluster.setAttributeSubscription(SimpleMeteringServer.ATTR_PowerFactor_NAME,
 						new SubscriptionParameters(this.reportingTimeSeconds, this.reportingTimeSeconds, 0), reqContext);
 				//debug
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
-						+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
+				this.debugSubscription(acceptedParams);
 				
 				// get the divisor needed to convert measured power to kW or kWh
 				IAttributeValue divisorValue = cluster.getAttributeValue(SimpleMeteringServer.ATTR_Divisor_NAME,
@@ -677,5 +679,15 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 		}
 		
 		return done;
+	}
+	
+	private void debugSubscription(ISubscriptionParameters acceptedParams)
+	{
+		//debug
+		if(acceptedParams!=null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscription result:"
+				+ acceptedParams.getMinReportingInterval()+","+acceptedParams.getMaxReportingInterval()+","+acceptedParams.getReportableChange());
+		else
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Subscripion not accepted");
 	}
 }
