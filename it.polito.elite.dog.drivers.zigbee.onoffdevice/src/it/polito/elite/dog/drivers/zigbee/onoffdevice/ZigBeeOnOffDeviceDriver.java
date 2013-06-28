@@ -35,6 +35,7 @@ import org.osgi.service.log.LogService;
 
 /**
  * The onoff device driver which handles OnOffDevices, on ZigBee networks.
+ * 
  * @author bonino
  * 
  */
@@ -57,6 +58,9 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	
 	// what are the on/off device categories that can match with this driver?
 	private Set<String> OnOffDeviceCategories;
+	
+	// //the list of instances controlled / spawned by this driver
+	private HashSet<ZigBeeOnOffDeviceDriverInstance> managedInstances;
 	
 	// the bundle logger
 	private LogService logger;
@@ -88,6 +92,9 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 		// initialize data structures
 		this.OnOffDeviceCategories = new HashSet<String>();
 		
+		// initialize the set of managed instances
+		this.managedInstances = new HashSet<ZigBeeOnOffDeviceDriverInstance>();
+		
 		// fill the categories
 		properFillDeviceCategories();
 		
@@ -102,11 +109,28 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	 */
 	public void deactivate()
 	{
+		// log deactivation
+		this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + " Deactivation required");
+		
+		// remove the managed instances from the network driver
+		for (ZigBeeOnOffDeviceDriverInstance instance : this.managedInstances)
+			this.network.removeFromNetworkDriver(instance);
+		
 		this.unRegisterOnOffDeviceDriver();
+		
+		// null inner variables
+		this.context = null;
+		this.network = null;
+		this.logger = null;
+		this.managedInstances = null;
 	}
 	
 	public void addedNetworkDriver(ZigBeeNetwork network)
 	{
+		// log network driver addition
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + "Added network driver");
+		
 		// store the network driver reference
 		this.network = network;
 		
@@ -116,6 +140,10 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	
 	public void removedNetworkDriver(ZigBeeNetwork network)
 	{
+		// log network driver removal
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + "Removed network driver");
+		
 		// unregister the services
 		this.unRegisterOnOffDeviceDriver();
 		

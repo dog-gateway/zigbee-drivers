@@ -20,6 +20,7 @@ import it.polito.elite.domotics.dog2.doglibrary.util.DogLogInstance;
 import it.polito.elite.domotics.model.devicecategory.EnergyAndPowerMeter;
 
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 import org.osgi.framework.BundleContext;
@@ -33,168 +34,196 @@ import org.osgi.service.log.LogService;
 
 /**
  * @author bonino
- *
+ * 
  */
 public class ZigBeeEnergyAndPowerMeterDriver implements Driver, ManagedService
 {
 	// the bundle context
-		private BundleContext context;
-		
-		// the associated network driver
-		private ZigBeeNetwork network;
-		
-		// the reporting time for onoff devices
-		private int reportingTimeSeconds = 5; // default 5s
-		
-		// the registration object needed to handle the life span of this bundle in
-		// the OSGi framework (it is a ServiceRegistration object for use by the
-		// bundle registering the service to update the service's properties or to
-		// unregister the service).
-		private ServiceRegistration<?> regDriver;
-		
-		// the bundle logger
-		private LogService logger;
-		
-		// the bundle log id
-		protected static final String logId = "[ZigBeeEnergyAndPowerMeterDriver]: ";
-		
-		/**
+	private BundleContext context;
+	
+	// the associated network driver
+	private ZigBeeNetwork network;
+	
+	// the reporting time for onoff devices
+	private int reportingTimeSeconds = 5; // default 5s
+	
+	// the registration object needed to handle the life span of this bundle in
+	// the OSGi framework (it is a ServiceRegistration object for use by the
+	// bundle registering the service to update the service's properties or to
+	// unregister the service).
+	private ServiceRegistration<?> regDriver;
+	
+	// the list of instances controlled / spawned by this driver
+	private HashSet<ZigBeeEnergyAndPowerMeterDriverInstance> managedInstances;
+	
+	// the bundle logger
+	private LogService logger;
+	
+	// the bundle log id
+	protected static final String logId = "[ZigBeeEnergyAndPowerMeterDriver]: ";
+	
+	/**
 			 * 
 			 */
-		public ZigBeeEnergyAndPowerMeterDriver()
-		{
-			// intentionally left empty
-		}
+	public ZigBeeEnergyAndPowerMeterDriver()
+	{
+		// intentionally left empty
+	}
+	
+	/**
+	 * Activate the bundle
+	 * 
+	 * @param context
+	 */
+	public void activate(BundleContext context)
+	{
+		// store the context
+		this.context = context;
 		
-		/**
-		 * Activate the bundle
-		 * 
-		 * @param context
-		 */
-		public void activate(BundleContext context)
-		{
-			// store the context
-			this.context = context;
-			
-			// initialize the bundle logger
-			this.logger = new DogLogInstance(context);
-			
-			this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + "Activated...");
-		}
+		// initialize the bundle logger
+		this.logger = new DogLogInstance(context);
 		
-		/**
-		 * Deactivate the bundle removing published services in a clean way.
-		 */
-		public void deactivate()
-		{
-			this.unRegisterMeteringPowerOutletDriver();
-		}
+		// initialize the lis of managed instances
+		this.managedInstances = new HashSet<ZigBeeEnergyAndPowerMeterDriverInstance>();
 		
-		public void addedNetworkDriver(ZigBeeNetwork network)
-		{
-			// store the network driver reference
-			this.network = network;
-			
-			// try to register the driver service
-			this.registerMeteringPowerOutletDriver();
-		}
+		this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + "Activated...");
+	}
+	
+	/**
+	 * Deactivate the bundle removing published services in a clean way.
+	 */
+	public void deactivate()
+	{
+		// log deactivation
+		this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + " Deactivation required");
 		
-		public void removedNetworkDriver(ZigBeeNetwork network)
-		{
-			// unregister the services
-			this.unRegisterMeteringPowerOutletDriver();
-			
-			// null the network freeing the old reference for gc
-			// this.network = null;
-		}
+		// remove the managed instances from the network driver
+		for (ZigBeeEnergyAndPowerMeterDriverInstance instance : this.managedInstances)
+			this.network.removeFromNetworkDriver(instance);
 		
-		@SuppressWarnings("rawtypes")
-		@Override
-		public int match(ServiceReference reference) throws Exception
+		// un-register
+		this.unRegisterEnergyAndPowerMeterDriver();
+		
+		// null inner variables
+		this.context = null;
+		this.network = null;
+		this.logger = null;
+		this.managedInstances = null;
+	}
+	
+	public void addedNetworkDriver(ZigBeeNetwork network)
+	{
+		// log network river addition
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + " Added network driver");
+		
+		// store the network driver reference
+		this.network = network;
+		
+		// try to register the driver service
+		this.registerEnergyAndPowerMeterDriver();
+	}
+	
+	public void removedNetworkDriver(ZigBeeNetwork network)
+	{
+		// log network river removal
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + " Removed network driver");
+		
+		// unregister the services
+		this.unRegisterEnergyAndPowerMeterDriver();
+		
+		// null the network freeing the old reference for gc
+		this.network = null;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@Override
+	public int match(ServiceReference reference) throws Exception
+	{
+		int matchValue = Device.MATCH_NONE;
+		
+		// get the given device category
+		String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
+		
+		// get the given device manufacturer
+		String manifacturer = (String) reference.getProperty(DogDeviceCostants.MANUFACTURER);
+		
+		// compute the matching score between the given device and this driver
+		if (deviceCategory != null)
 		{
-			int matchValue = Device.MATCH_NONE;
-			
-			// get the given device category
-			String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
-			
-			// get the given device manufacturer
-			String manifacturer = (String) reference.getProperty(DogDeviceCostants.MANUFACTURER);
-			
-			// compute the matching score between the given device and this driver
-			if (deviceCategory != null)
+			if (manifacturer != null && (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
+					&& (deviceCategory.equals(EnergyAndPowerMeter.class.getName())))
 			{
-				if (manifacturer != null && (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
-						&& (deviceCategory.equals(EnergyAndPowerMeter.class.getName())))
-				{
-					matchValue = EnergyAndPowerMeter.MATCH_MANUFACTURER + EnergyAndPowerMeter.MATCH_TYPE;
-				}
-				
-			}
-			return matchValue;
-		}
-		
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		@Override
-		public String attach(ServiceReference reference) throws Exception
-		{
-			// create a new driver instance
-			ZigBeeEnergyAndPowerMeterDriverInstance driverInstance = new ZigBeeEnergyAndPowerMeterDriverInstance(network,
-					(ControllableDevice) this.context.getService(reference), this.context, this.reportingTimeSeconds);
-			
-			// associate device and driver
-			((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
-			
-			// must always return null
-			return null;
-		}
-		
-		@Override
-		public void updated(Dictionary<String, ?> configParams) throws ConfigurationException
-		{
-			if(configParams != null)
-			{
-				// used to store polling policies
-				this.reportingTimeSeconds = Integer.valueOf((String) configParams.get("reportingTimeSeconds"));
-				
-				// debug
-				this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + " Reporting time = "
-						+ this.reportingTimeSeconds + "s");
-				
-				// try to register the service
-				this.registerMeteringPowerOutletDriver();
-			}
-		}
-		
-		/**
-		 * Register this bundle as an OnOff device driver
-		 */
-		private void registerMeteringPowerOutletDriver()
-		{
-			if ((this.context != null) && (this.regDriver == null) && (this.network != null))
-			{
-				// create a new property object describing this driver
-				Hashtable<String, Object> propDriver = new Hashtable<String, Object>();
-				
-				// add the id of this driver to the properties
-				propDriver.put(DogDeviceCostants.DRIVER_ID, this.getClass().getName());
-				
-				// register this driver in the OSGi framework
-				this.regDriver = this.context.registerService(Driver.class.getName(), this, propDriver);
+				matchValue = EnergyAndPowerMeter.MATCH_MANUFACTURER + EnergyAndPowerMeter.MATCH_TYPE;
 			}
 			
 		}
+		return matchValue;
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public String attach(ServiceReference reference) throws Exception
+	{
+		// create a new driver instance
+		ZigBeeEnergyAndPowerMeterDriverInstance driverInstance = new ZigBeeEnergyAndPowerMeterDriverInstance(network,
+				(ControllableDevice) this.context.getService(reference), this.context, this.reportingTimeSeconds);
 		
-		/**
-		 * Unregisters this driver from the OSGi framework...
-		 */
-		private void unRegisterMeteringPowerOutletDriver()
+		// associate device and driver
+		((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
+		
+		// must always return null
+		return null;
+	}
+	
+	@Override
+	public void updated(Dictionary<String, ?> configParams) throws ConfigurationException
+	{
+		if (configParams != null)
 		{
-			// TODO DETACH allocated Drivers
-			if (this.regDriver != null)
-			{
-				this.regDriver.unregister();
-				this.regDriver = null;
-			}
+			// used to store polling policies
+			this.reportingTimeSeconds = Integer.valueOf((String) configParams.get("reportingTimeSeconds"));
 			
+			// debug
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeEnergyAndPowerMeterDriver.logId + " Reporting time = "
+					+ this.reportingTimeSeconds + "s");
+			
+			// try to register the service
+			this.registerEnergyAndPowerMeterDriver();
 		}
+	}
+	
+	/**
+	 * Register this bundle as an OnOff device driver
+	 */
+	private void registerEnergyAndPowerMeterDriver()
+	{
+		if ((this.context != null) && (this.regDriver == null) && (this.network != null))
+		{
+			// create a new property object describing this driver
+			Hashtable<String, Object> propDriver = new Hashtable<String, Object>();
+			
+			// add the id of this driver to the properties
+			propDriver.put(DogDeviceCostants.DRIVER_ID, this.getClass().getName());
+			
+			// register this driver in the OSGi framework
+			this.regDriver = this.context.registerService(Driver.class.getName(), this, propDriver);
+		}
+		
+	}
+	
+	/**
+	 * Unregisters this driver from the OSGi framework...
+	 */
+	private void unRegisterEnergyAndPowerMeterDriver()
+	{
+		// TODO DETACH allocated Drivers
+		if (this.regDriver != null)
+		{
+			this.regDriver.unregister();
+			this.regDriver = null;
+		}
+		
+	}
 }

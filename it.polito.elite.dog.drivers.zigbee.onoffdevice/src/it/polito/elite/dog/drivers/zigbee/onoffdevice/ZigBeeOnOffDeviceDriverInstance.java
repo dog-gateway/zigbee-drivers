@@ -102,7 +102,7 @@ public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lam
 	}
 	
 	@Override
-	public synchronized DeviceStatus getState()
+	public DeviceStatus getState()
 	{
 		return this.currentState;
 	}

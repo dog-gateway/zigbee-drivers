@@ -20,6 +20,7 @@ import it.polito.elite.domotics.dog2.doglibrary.util.DogLogInstance;
 import it.polito.elite.domotics.model.devicecategory.MeteringPowerOutlet;
 
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Hashtable;
 
 import org.osgi.framework.BundleContext;
@@ -52,6 +53,9 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	// unregister the service).
 	private ServiceRegistration<?> regDriver;
 	
+	// the list of instances controlled / spawned by this driver
+	private HashSet<ZigBeeMeteringPowerOutletDriverInstance> managedInstances;
+	
 	// the bundle logger
 	private LogService logger;
 	
@@ -79,6 +83,9 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 		// initialize the bundle logger
 		this.logger = new DogLogInstance(context);
 		
+		// initialize the lis of managed instances
+		this.managedInstances = new HashSet<ZigBeeMeteringPowerOutletDriverInstance>();
+		
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + "Activated...");
 	}
 	
@@ -87,11 +94,29 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	 */
 	public void deactivate()
 	{
+		// log deactivation
+		this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + " Deactivation required");
+		
+		// remove the managed instances from the network driver
+		for (ZigBeeMeteringPowerOutletDriverInstance instance : this.managedInstances)
+			this.network.removeFromNetworkDriver(instance);
+		
+		// un-register
 		this.unRegisterMeteringPowerOutletDriver();
+		
+		// null inner variables
+		this.context = null;
+		this.network = null;
+		this.logger = null;
+		this.managedInstances = null;
 	}
 	
 	public void addedNetworkDriver(ZigBeeNetwork network)
 	{
+		// log network driver addition
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + " Added network driver");
+		
 		// store the network driver reference
 		this.network = network;
 		
@@ -101,11 +126,15 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	
 	public void removedNetworkDriver(ZigBeeNetwork network)
 	{
+		// log network driver removal
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId + " Removed network driver");
+		
 		// unregister the services
 		this.unRegisterMeteringPowerOutletDriver();
 		
 		// null the network freeing the old reference for gc
-		// this.network = null;
+		this.network = null;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -144,6 +173,9 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 		// associate device and driver
 		((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
 		
+		// store the new instance as "managed" by this driver
+		this.managedInstances.add(driverInstance);
+		
 		// must always return null
 		return null;
 	}
@@ -151,7 +183,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	@Override
 	public void updated(Dictionary<String, ?> configParams) throws ConfigurationException
 	{
-		if(configParams != null)
+		if (configParams != null)
 		{
 			// used to store polling policies
 			this.reportingTimeSeconds = Integer.valueOf((String) configParams.get("reportingTimeSeconds"));

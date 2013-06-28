@@ -40,6 +40,12 @@ public interface ZigBeeNetwork
 	public IAppliance addToNetworkDriver(String applianceSerial, ZigBeeDriver driver);
 	
 	/**
+	 * Removes all the association between appliances and the given network driver
+	 * @param driver the driver to which the appliance handling was delegated
+	 */
+	public void removeFromNetworkDriver(ZigBeeDriver driver);
+	
+	/**
 	 * Get the {@link ZigBeeApplianceInfo} object currently associated to the given serial
 	 * number, if any, otherwise return null.
 	 * 

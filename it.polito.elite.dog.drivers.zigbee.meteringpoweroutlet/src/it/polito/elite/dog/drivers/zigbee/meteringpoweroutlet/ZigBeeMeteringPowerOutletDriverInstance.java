@@ -139,7 +139,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver implem
 	}
 	
 	@Override
-	public synchronized DeviceStatus getState()
+	public DeviceStatus getState()
 	{
 		return this.currentState;
 	}

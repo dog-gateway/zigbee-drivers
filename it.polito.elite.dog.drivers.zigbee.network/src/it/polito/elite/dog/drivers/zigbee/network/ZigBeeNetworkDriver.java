@@ -23,7 +23,9 @@ import it.telecomitalia.ah.hac.IAttributeValuesListener;
 import it.telecomitalia.ah.hac.IServiceCluster;
 
 import java.util.Dictionary;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -49,10 +51,10 @@ public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValue
 	private static final String logId = "[ZigBeeNetworkDriver]: ";
 	
 	// the appliance / endpoint map
-	private HashMap<String, ZigBeeApplianceInfo> connectedAppliances;
+	private ConcurrentHashMap<String, ZigBeeApplianceInfo> connectedAppliances;
 	
 	// the serial/driver map
-	private HashMap<String, ZigBeeDriver> connectedDrivers;
+	private ConcurrentHashMap<String, ZigBeeDriver> connectedDrivers;
 	
 	// the service registration handle
 	private ServiceRegistration<?> regServiceZigBeeNetwork;
@@ -64,8 +66,8 @@ public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValue
 	public ZigBeeNetworkDriver()
 	{
 		// init data structures
-		this.connectedAppliances = new HashMap<String, ZigBeeApplianceInfo>();
-		this.connectedDrivers = new HashMap<String, ZigBeeDriver>();
+		this.connectedAppliances = new ConcurrentHashMap<String, ZigBeeApplianceInfo>();
+		this.connectedDrivers = new ConcurrentHashMap<String, ZigBeeDriver>();
 	}
 	
 	public void activate(BundleContext context)
@@ -167,6 +169,32 @@ public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValue
 	}
 	
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork#removeFromNetworkDriver(it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver)
+	 */
+	@Override
+	public void removeFromNetworkDriver(ZigBeeDriver driver)
+	{
+		HashSet<String> toRemove = new HashSet<String>();
+		
+		//get the connected drivers
+		for(Entry<String,ZigBeeDriver> entry : this.connectedDrivers.entrySet())
+		{
+			//get the key, if any
+			if(entry.getValue().equals(driver))
+				toRemove.add(entry.getKey());
+		}
+		
+		//remove the corresponding entries
+		for(String key: toRemove)
+		{
+			this.connectedDrivers.remove(key);
+		}
+		
+	}
+
 	/**
 	 * Register this bundle as network driver
 	 */
