@@ -141,23 +141,27 @@ public class ZigBeeEnergyAndPowerMeterDriver implements Driver, ManagedService
 	@Override
 	public int match(ServiceReference reference) throws Exception
 	{
+		
 		int matchValue = Device.MATCH_NONE;
-		
-		// get the given device category
-		String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
-		
-		// get the given device manufacturer
-		String manifacturer = (String) reference.getProperty(DogDeviceCostants.MANUFACTURER);
-		
-		// compute the matching score between the given device and this driver
-		if (deviceCategory != null)
+		if (this.regDriver != null)
 		{
-			if (manifacturer != null && (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
-					&& (deviceCategory.equals(EnergyAndPowerMeter.class.getName())))
-			{
-				matchValue = EnergyAndPowerMeter.MATCH_MANUFACTURER + EnergyAndPowerMeter.MATCH_TYPE;
-			}
+			// get the given device category
+			String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
 			
+			// get the given device manufacturer
+			String manifacturer = (String) reference.getProperty(DogDeviceCostants.MANUFACTURER);
+			
+			// compute the matching score between the given device and this
+			// driver
+			if (deviceCategory != null)
+			{
+				if (manifacturer != null && (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
+						&& (deviceCategory.equals(EnergyAndPowerMeter.class.getName())))
+				{
+					matchValue = EnergyAndPowerMeter.MATCH_MANUFACTURER + EnergyAndPowerMeter.MATCH_TYPE;
+				}
+				
+			}
 		}
 		return matchValue;
 	}
@@ -166,13 +170,16 @@ public class ZigBeeEnergyAndPowerMeterDriver implements Driver, ManagedService
 	@Override
 	public String attach(ServiceReference reference) throws Exception
 	{
-		// create a new driver instance
-		ZigBeeEnergyAndPowerMeterDriverInstance driverInstance = new ZigBeeEnergyAndPowerMeterDriverInstance(network,
-				(ControllableDevice) this.context.getService(reference), this.context, this.reportingTimeSeconds);
-		
-		// associate device and driver
-		((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
-		
+		if (this.regDriver != null)
+		{
+			// create a new driver instance
+			ZigBeeEnergyAndPowerMeterDriverInstance driverInstance = new ZigBeeEnergyAndPowerMeterDriverInstance(
+					network, (ControllableDevice) this.context.getService(reference), this.context,
+					this.reportingTimeSeconds);
+			
+			// associate device and driver
+			((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
+		}
 		// must always return null
 		return null;
 	}
