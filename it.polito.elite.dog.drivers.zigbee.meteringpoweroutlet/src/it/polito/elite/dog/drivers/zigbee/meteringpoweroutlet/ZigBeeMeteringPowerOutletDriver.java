@@ -142,7 +142,8 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	public int match(ServiceReference reference) throws Exception
 	{
 		int matchValue = Device.MATCH_NONE;
-		
+		if (this.regDriver != null)
+		{
 		// get the given device category
 		String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
 		
@@ -159,6 +160,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 			}
 			
 		}
+		}
 		return matchValue;
 	}
 	
@@ -166,6 +168,8 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	@Override
 	public String attach(ServiceReference reference) throws Exception
 	{
+		if (this.regDriver != null)
+		{
 		// create a new driver instance
 		ZigBeeMeteringPowerOutletDriverInstance driverInstance = new ZigBeeMeteringPowerOutletDriverInstance(network,
 				(ControllableDevice) this.context.getService(reference), this.context, this.reportingTimeSeconds);
@@ -175,7 +179,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 		
 		// store the new instance as "managed" by this driver
 		this.managedInstances.add(driverInstance);
-		
+		}
 		// must always return null
 		return null;
 	}

@@ -110,7 +110,8 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	public void deactivate()
 	{
 		// log deactivation
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + " Deactivation required");
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + " Deactivation required");
 		
 		// remove the managed instances from the network driver
 		for (ZigBeeOnOffDeviceDriverInstance instance : this.managedInstances)
@@ -157,21 +158,25 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	{
 		int matchValue = Device.MATCH_NONE;
 		
-		// get the given device category
-		String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
-		
-		// get the given device manufacturer
-		String manifacturer = (String) reference.getProperty(DogDeviceCostants.MANUFACTURER);
-		
-		// compute the matching score between the given device and this driver
-		if (deviceCategory != null)
+		if (this.regDriver != null)
 		{
-			if (manifacturer != null && (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
-					&& (OnOffDeviceCategories.contains(deviceCategory)))
-			{
-				matchValue = Lamp.MATCH_MANUFACTURER + Lamp.MATCH_TYPE;
-			}
+			// get the given device category
+			String deviceCategory = (String) reference.getProperty(DogDeviceCostants.DEVICE_CATEGORY);
 			
+			// get the given device manufacturer
+			String manifacturer = (String) reference.getProperty(DogDeviceCostants.MANUFACTURER);
+			
+			// compute the matching score between the given device and this
+			// driver
+			if (deviceCategory != null)
+			{
+				if (manifacturer != null && (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
+						&& (OnOffDeviceCategories.contains(deviceCategory)))
+				{
+					matchValue = Lamp.MATCH_MANUFACTURER + Lamp.MATCH_TYPE;
+				}
+				
+			}
 		}
 		return matchValue;
 	}
@@ -180,12 +185,16 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	@Override
 	public String attach(ServiceReference reference) throws Exception
 	{
-		// create a new driver instance
-		ZigBeeOnOffDeviceDriverInstance driverInstance = new ZigBeeOnOffDeviceDriverInstance(network,
-				(ControllableDevice) this.context.getService(reference), this.context);
-		
-		// associate device and driver
-		((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
+		if (this.regDriver != null)
+		{
+			// create a new driver instance
+			ZigBeeOnOffDeviceDriverInstance driverInstance = new ZigBeeOnOffDeviceDriverInstance(network,
+					(ControllableDevice) this.context.getService(reference), this.context);
+			
+			// associate device and driver
+			((ControllableDevice) context.getService(reference)).setDriver(driverInstance);
+			
+		}
 		
 		// must always return null
 		return null;
