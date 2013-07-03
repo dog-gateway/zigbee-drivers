@@ -19,7 +19,7 @@
 			<dhc:description>The Modbus X gateway
 			</dhc:description>
 			<dhc:isIn>Alcotra_DemoBox</dhc:isIn>
-			<dhc:param value="130.192.163.159" name="IPAddress" />
+			<dhc:param value="192.168.1.41" name="IPAddress" />
 			<dhc:param value="1000" name="port"/>
 			<dhc:param value="RTU_TCP" name="protocolVariant" />
 		</dhc:device>
