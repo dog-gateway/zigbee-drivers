@@ -146,7 +146,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 	public void notifyNewActivePowerValue(Measure<?, ?> powerValue)
 	{
 		StateValue currentStateValue = this.currentState.getState(
-				SinglePhaseActivePowerMeasurementState.class.getName()).getCurrentStateValue()[0];
+				SinglePhaseActivePowerMeasurementState.class.getSimpleName()).getCurrentStateValue()[0];
 		
 		// convert the value to the currently set value
 		powerValue = powerValue.to(((Measure) (currentStateValue.getValue())).getUnit());
@@ -167,7 +167,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 	@Override
 	public void notifyNewReactiveEnergyValue(Measure<?, ?> value)
 	{
-		StateValue currentStateValue = this.currentState.getState(SinglePhaseReactiveEnergyState.class.getName())
+		StateValue currentStateValue = this.currentState.getState(SinglePhaseReactiveEnergyState.class.getSimpleName())
 				.getCurrentStateValue()[0];
 		
 		// convert the value to the currently set value
@@ -188,7 +188,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 	@Override
 	public void notifyNewActiveEnergyValue(Measure<?, ?> value)
 	{
-		StateValue currentStateValue = this.currentState.getState(SinglePhaseActiveEnergyState.class.getName())
+		StateValue currentStateValue = this.currentState.getState(SinglePhaseActiveEnergyState.class.getSimpleName())
 				.getCurrentStateValue()[0];
 		
 		// convert the value to the currently set value
@@ -340,19 +340,19 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver implem
 		// active power state
 		ActivePowerStateValue initialActivePowerValue = new ActivePowerStateValue();
 		initialActivePowerValue.setValue(DecimalMeasure.valueOf("0 " + activePowerUOM));
-		this.currentState.setState(SinglePhaseActivePowerMeasurementState.class.getName(),
+		this.currentState.setState(SinglePhaseActivePowerMeasurementState.class.getSimpleName(),
 				new SinglePhaseActivePowerMeasurementState(initialActivePowerValue));
 		
 		// active energy state
 		ActiveEnergyStateValue initialActiveEnergyValue = new ActiveEnergyStateValue();
 		initialActiveEnergyValue.setValue(DecimalMeasure.valueOf("0 " + activeEnergyUOM));
-		this.currentState.setState(SinglePhaseActiveEnergyState.class.getName(), new SinglePhaseActiveEnergyState(
+		this.currentState.setState(SinglePhaseActiveEnergyState.class.getSimpleName(), new SinglePhaseActiveEnergyState(
 				initialActiveEnergyValue));
 		
 		// reactive energy state
 		ReactiveEnergyStateValue initialReactiveEnergyValue = new ReactiveEnergyStateValue();
 		initialReactiveEnergyValue.setValue(DecimalMeasure.valueOf("0 " + reactiveEnergyUOM));
-		this.currentState.setState(SinglePhaseReactiveEnergyState.class.getName(), new SinglePhaseReactiveEnergyState(
+		this.currentState.setState(SinglePhaseReactiveEnergyState.class.getSimpleName(), new SinglePhaseReactiveEnergyState(
 				initialReactiveEnergyValue));
 		
 	}
