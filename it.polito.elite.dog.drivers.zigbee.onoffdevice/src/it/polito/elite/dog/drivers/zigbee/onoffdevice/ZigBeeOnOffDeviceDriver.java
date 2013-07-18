@@ -206,7 +206,7 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 		if (configParams != null)
 		{
 			// used to store polling policies
-			this.reportingTime = (Integer) configParams.get("reportingTimeSeconds");
+			this.reportingTime = Integer.valueOf((String)configParams.get("reportingTimeSeconds"));
 			
 			// debug
 			this.logger.log(LogService.LOG_DEBUG, ZigBeeOnOffDeviceDriver.logId + " Reporting time = "
