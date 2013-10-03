@@ -1,20 +1,26 @@
 /*
  * Dog 2.0 - ZigBee Network Driver
  * 
- * Copyright [2013] 
- * [Dario Bonino (dario.bonino@polito.it), Politecnico di Torino] 
+  * 
+ * Copyright 2013 Dario Bonino 
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed 
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and limitations under the License. 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License
  */
 package it.polito.elite.dog.drivers.zigbee.network;
 
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.polito.elite.domotics.dog2.doglibrary.util.DogLogInstance;
+import it.polito.elite.dog.core.library.util.LogHelper;
 import it.telecomitalia.ah.hac.IAppliance;
 import it.telecomitalia.ah.hac.IApplicationEndPoint;
 import it.telecomitalia.ah.hac.IApplicationService;
@@ -42,7 +48,7 @@ import org.osgi.service.log.LogService;
 public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValuesListener, ZigBeeNetwork, ManagedService
 {
 	// the bundle logger
-	private LogService logger;
+	private LogHelper logger;
 	
 	// the bundle context
 	private BundleContext context;
@@ -76,7 +82,7 @@ public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValue
 		this.context = context;
 		
 		// initialize the class logger...
-		this.logger = new DogLogInstance(context);
+		this.logger = new LogHelper(context);
 		
 		// debug: signal activation...
 		this.logger.log(LogService.LOG_DEBUG, ZigBeeNetworkDriver.logId + "Activated...");

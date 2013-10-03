@@ -1,14 +1,20 @@
 /*
  * Dog 2.0 - ZigBee Network Driver
  * 
- * Copyright [Jun 19, 2013] 
- * [Dario Bonino (dario.bonino@polito.it), Politecnico di Torino] 
- *  
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed 
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and limitations under the License. 
+ * 
+ * Copyright 2013 Dario Bonino 
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License
  */
 package it.polito.elite.dog.drivers.zigbee.network;
 
@@ -16,9 +22,9 @@ import it.polito.elite.dog.drivers.zigbee.network.info.CmdNotificationInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.polito.elite.domotics.dog2.doglibrary.DogElementDescription;
-import it.polito.elite.domotics.dog2.doglibrary.devicecategory.ControllableDevice;
-import it.polito.elite.domotics.model.DeviceStatus;
+import it.polito.elite.dog.core.library.util.ElementDescription;
+import it.polito.elite.dog.core.library.model.ControllableDevice;
+import it.polito.elite.dog.core.library.model.DeviceStatus;
 import it.telecomitalia.ah.hac.IAttributeValue;
 
 import java.util.HashMap;
@@ -147,15 +153,15 @@ public abstract class ZigBeeDriver
 		// the unit of measure associated to meter functionalities.
 		
 		// get parameters associated to each device command (if any)
-		Set<DogElementDescription> commandsSpecificParameters = this.device.getDeviceDescriptor()
+		Set<ElementDescription> commandsSpecificParameters = this.device.getDeviceDescriptor()
 				.getDevCommandSpecificParams();
 		
 		// get parameters associated to each device notification (if any)
-		Set<DogElementDescription> notificationsSpecificParameters = this.device.getDeviceDescriptor()
+		Set<ElementDescription> notificationsSpecificParameters = this.device.getDeviceDescriptor()
 				.getDevNotificationSpecificParams();
 		
 		// --------------- Handle command specific parameters ----------------
-		for (DogElementDescription parameter : commandsSpecificParameters)
+		for (ElementDescription parameter : commandsSpecificParameters)
 		{
 			
 			// the parameter map
@@ -174,7 +180,7 @@ public abstract class ZigBeeDriver
 		
 		// --------------- Handle notification specific parameters
 		// ----------------
-		for (DogElementDescription parameter : notificationsSpecificParameters)
+		for (ElementDescription parameter : notificationsSpecificParameters)
 		{
 			// the parameter map
 			Map<String, String> params = parameter.getElementParams();
