@@ -132,7 +132,7 @@ public abstract class ZigBeeDriver
 		// serial number, etc.
 		// specified for the whole device
 		Map<String, Set<String>> deviceConfigurationParams = this.device.getDeviceDescriptor()
-				.getDevSimpleConfigurationParams();
+				.getSimpleConfigurationParams();
 		
 		// check not null
 		if (deviceConfigurationParams != null)
@@ -154,11 +154,11 @@ public abstract class ZigBeeDriver
 		
 		// get parameters associated to each device command (if any)
 		Set<ElementDescription> commandsSpecificParameters = this.device.getDeviceDescriptor()
-				.getDevCommandSpecificParams();
+				.getCommandSpecificParams();
 		
 		// get parameters associated to each device notification (if any)
 		Set<ElementDescription> notificationsSpecificParameters = this.device.getDeviceDescriptor()
-				.getDevNotificationSpecificParams();
+				.getNotificationSpecificParams();
 		
 		// --------------- Handle command specific parameters ----------------
 		for (ElementDescription parameter : commandsSpecificParameters)
