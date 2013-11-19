@@ -80,7 +80,8 @@ public class ZigBeeOnOffDeviceDriver implements Driver, ManagedService
 	 */
 	public ZigBeeOnOffDeviceDriver()
 	{
-		// intentionally left empty
+		// create the atomic reference for the network driver
+		this.network = new AtomicReference<ZigBeeNetwork>();
 	}
 
 	/**
