@@ -152,7 +152,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public int match(ServiceReference reference) throws Exception
+	public synchronized int match(ServiceReference reference) throws Exception
 	{
 		int matchValue = Device.MATCH_NONE;
 		if (this.regDriver != null)
@@ -185,22 +185,26 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public String attach(ServiceReference reference) throws Exception
+	public synchronized String attach(ServiceReference reference)
+			throws Exception
 	{
 		if (this.regDriver != null)
 		{
+			// get the controllable device to attach
+			ControllableDevice device = (ControllableDevice) this.context
+					.getService(reference);
+
 			// create a new driver instance
 			ZigBeeMeteringPowerOutletDriverInstance driverInstance = new ZigBeeMeteringPowerOutletDriverInstance(
-					network.get(),
-					(ControllableDevice) this.context.getService(reference),
-					this.context, this.reportingTimeSeconds);
-
-			// associate device and driver
-			((ControllableDevice) context.getService(reference))
-					.setDriver(driverInstance);
+					network.get(), device, this.context,
+					this.reportingTimeSeconds);
 
 			// store the new instance as "managed" by this driver
 			this.managedInstances.add(driverInstance);
+
+			// associate device and driver
+			device.setDriver(driverInstance);
+
 		}
 		// must always return null
 		return null;

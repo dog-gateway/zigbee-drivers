@@ -169,7 +169,7 @@ public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValue
 		
 		// check if the appliance already exists and if such, call back the
 		// driver method...
-		this.updateApplianceDriverBinding(applianceSerial);
+		// this.updateApplianceDriverBinding(applianceSerial);
 		
 		return null;
 	}
@@ -228,7 +228,7 @@ public class ZigBeeNetworkDriver implements IApplicationService, IAttributeValue
 	 * 
 	 * @param applianceSerial
 	 */
-	private void updateApplianceDriverBinding(String applianceSerial)
+	private synchronized void updateApplianceDriverBinding(String applianceSerial)
 	{
 		// get the associated appliance info, if any
 		ZigBeeApplianceInfo applianceInfo = this.connectedAppliances.get(applianceSerial);
