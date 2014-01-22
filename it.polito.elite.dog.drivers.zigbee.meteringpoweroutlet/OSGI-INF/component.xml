@@ -3,6 +3,7 @@
    <implementation class="it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet.ZigBeeMeteringPowerOutletDriver"/>
    <property name="service.pid" type="String" value="it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet"/>
    <reference bind="addedNetworkDriver" cardinality="1..1" interface="it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork" name="ZigBeeNetwork" policy="dynamic" unbind="removedNetworkDriver"/>
+   <reference bind="addedGatewayDriver" cardinality="1..1" interface="it.polito.elite.dog.drivers.zigbee.gateway.ZigBeeGatewayDriver" name="ZigBeeGatewayDriver" policy="dynamic" unbind="removedGatewayDriver"/>
    <service>
       <provide interface="org.osgi.service.cm.ManagedService"/>
    </service>

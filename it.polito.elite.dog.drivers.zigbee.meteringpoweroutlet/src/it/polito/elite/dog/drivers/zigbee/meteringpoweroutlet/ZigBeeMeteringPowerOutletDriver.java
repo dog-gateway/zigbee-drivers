@@ -18,12 +18,17 @@
  */
 package it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet;
 
+import it.polito.elite.dog.core.library.model.ControllableDevice;
+import it.polito.elite.dog.core.library.model.DeviceCostants;
+import it.polito.elite.dog.core.library.model.devicecategory.MeteringPowerOutlet;
+import it.polito.elite.dog.core.library.util.LogHelper;
+import it.polito.elite.dog.drivers.zigbee.gateway.ZigBeeGatewayDriver;
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeDriverInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.polito.elite.dog.core.library.model.DeviceCostants;
-import it.polito.elite.dog.core.library.model.ControllableDevice;
-import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.core.library.model.devicecategory.MeteringPowerOutlet;
+import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
+import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
 
 import java.util.Dictionary;
 import java.util.HashSet;
@@ -43,13 +48,17 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
+public class ZigBeeMeteringPowerOutletDriver extends ZigBeeDriver implements
+		Driver, ManagedService
 {
 	// the bundle context
 	private BundleContext context;
 
 	// the associated network driver
 	private AtomicReference<ZigBeeNetwork> network;
+
+	// the associated gateway driver
+	private AtomicReference<ZigBeeGatewayDriver> gateway;
 
 	// the reporting time for onoff devices
 	private int reportingTimeSeconds = 5; // default 5s
@@ -76,6 +85,8 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	{
 		// create the atomic reference for the network driver
 		this.network = new AtomicReference<ZigBeeNetwork>();
+		
+		this.gateway = new AtomicReference<ZigBeeGatewayDriver>();
 	}
 
 	/**
@@ -93,6 +104,16 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 
 		// initialize the lis of managed instances
 		this.managedInstances = new HashSet<ZigBeeMeteringPowerOutletDriverInstance>();
+
+		// create the driver description info
+		this.driverInfo = new ZigBeeDriverInfo();
+		this.driverInfo.setDriverName(context.getBundle().getSymbolicName());
+		this.driverInfo.setDriverVersion(context.getBundle().getVersion()
+				.toString());
+		this.driverInfo.setMainDeviceClass(MeteringPowerOutlet.class
+				.getSimpleName());
+		this.driverInfo.addServerClusters(OnOffServer.class.getName(),
+				SimpleMeteringServer.class.getName());
 
 		this.logger.log(LogService.LOG_DEBUG,
 				ZigBeeMeteringPowerOutletDriver.logId + "Activated...");
@@ -147,6 +168,33 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 						ZigBeeMeteringPowerOutletDriver.logId
 								+ " Removed network driver");
 
+		}
+	}
+	
+	public void addedGatewayDriver(ZigBeeGatewayDriver gateway)
+	{
+		// log network driver addition
+		if (this.logger != null)
+			this.logger.log(LogService.LOG_DEBUG, ZigBeeMeteringPowerOutletDriver.logId
+					+ "Added gateway driver");
+
+		// store the network driver reference
+		this.gateway.set(gateway);
+
+	}
+
+	public void removedGatewayDriver(ZigBeeGatewayDriver gateway)
+	{
+		// null the network freeing the old reference for gc
+		if (this.gateway.compareAndSet(gateway, null))
+		{
+			// unregister the services
+			this.unRegisterMeteringPowerOutletDriver();
+			// log network driver removal
+			if (this.logger != null)
+				this.logger.log(LogService.LOG_DEBUG,
+						ZigBeeMeteringPowerOutletDriver.logId
+								+ "Removed gateway driver");
 		}
 	}
 
@@ -237,7 +285,7 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 	private void registerMeteringPowerOutletDriver()
 	{
 		if ((this.context != null) && (this.regDriver == null)
-				&& (this.network != null))
+				&& (this.network.get() != null)&& (this.gateway.get()!= null))
 		{
 			// create a new property object describing this driver
 			Hashtable<String, Object> propDriver = new Hashtable<String, Object>();
@@ -248,6 +296,9 @@ public class ZigBeeMeteringPowerOutletDriver implements Driver, ManagedService
 			// register this driver in the OSGi framework
 			this.regDriver = this.context.registerService(
 					Driver.class.getName(), this, propDriver);
+
+			// register the driver capability on the gateway
+			this.gateway.get().addActiveDriverDetails(this.driverInfo);
 		}
 
 	}

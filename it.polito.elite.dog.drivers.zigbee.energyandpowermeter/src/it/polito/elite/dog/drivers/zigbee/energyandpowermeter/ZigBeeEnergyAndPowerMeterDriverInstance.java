@@ -36,7 +36,7 @@ import it.polito.elite.dog.core.library.model.statevalue.OffStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.ReactiveEnergyStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.StateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.CmdNotificationInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
@@ -66,7 +66,7 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver
+public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstance
 		implements EnergyAndPowerMeter
 {
 
@@ -237,7 +237,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver
 	 */
 	@Override
 	public synchronized void setIAppliance(ZigBeeApplianceInfo appliance)
-	{	
+	{
 		// call the superclass method
 		super.setIAppliance(appliance);
 
@@ -497,15 +497,13 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver
 				}
 
 				// ------ get divisor and multiplier ----
-				
+
 				// get the divisor needed to convert measured power to W or Wh
 				IAttributeValue divisorValue = cluster.getAttributeValue(
 						SimpleMeteringServer.ATTR_Divisor_NAME, reqContext);
 
 				// the received divisor value
 				int divisor = ((Integer) divisorValue.getValue()).intValue();
-
-				
 
 				// get the multiplier needed to convert measured power to W or
 				// Wh
@@ -522,9 +520,9 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriver
 								+ this.divisor + "]<=" + divisor
 								+ " Multiplier[" + this.multiplier + "]<="
 								+ multiplier);
-				
+
 				// ------ update divisor and multiplier ----
-				
+
 				// update if greater than 1 and different from the one currently
 				// stored
 				if ((divisor > 1) && (divisor != this.divisor))

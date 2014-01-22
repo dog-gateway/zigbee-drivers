@@ -18,7 +18,7 @@
  */
 package it.polito.elite.dog.drivers.zigbee.network.interfaces;
 
-import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.telecomitalia.ah.hac.IAppliance;
 
@@ -43,20 +43,48 @@ public interface ZigBeeNetwork
 	 *         command, unless a later discovery sets the appliance associated
 	 *         to the driver by calling the driver's setIAppliance method.
 	 */
-	public IAppliance addToNetworkDriver(String applianceSerial, ZigBeeDriver driver);
-	
+	public IAppliance addToNetworkDriver(String applianceSerial,
+			ZigBeeDriverInstance driver);
+
 	/**
-	 * Removes all the association between appliances and the given network driver
-	 * @param driver the driver to which the appliance handling was delegated
-	 */
-	public void removeFromNetworkDriver(ZigBeeDriver driver);
-	
-	/**
-	 * Get the {@link ZigBeeApplianceInfo} object currently associated to the given serial
-	 * number, if any, otherwise return null.
+	 * Removes all the association between appliances and the given network
+	 * driver
 	 * 
-	 * @param applianceSerial The serial number identifying the appliance
-	 * @return The corresponding {@link ZigBeeApplianceInfo} object if available or null
+	 * @param driver
+	 *            the driver to which the appliance handling was delegated
+	 */
+	public void removeFromNetworkDriver(ZigBeeDriverInstance driver);
+
+	/**
+	 * Get the {@link ZigBeeApplianceInfo} object currently associated to the
+	 * given serial number, if any, otherwise return null.
+	 * 
+	 * @param applianceSerial
+	 *            The serial number identifying the appliance
+	 * @return The corresponding {@link ZigBeeApplianceInfo} object if available
+	 *         or null
 	 */
 	public ZigBeeApplianceInfo getZigBeeApplianceInfo(String applianceSerial);
+
+	/**
+	 * Adds a new appliance discovery listener to the set of objects which are
+	 * notified of the detection of unknown appliances. Although there should be
+	 * only one listener, implemented by the gateway driver, typically, multiple
+	 * listeners can be registered.
+	 * 
+	 * @param listener
+	 *            The {@link ApplianceDiscoveryListener} instance to register
+	 */
+	public void addApplianceDiscoveryListener(
+			ApplianceDiscoveryListener listener);
+
+	/**
+	 * Removes the given appliance discovery listener from the set of objects
+	 * which are notified of the detection of unknown appliances.
+	 * 
+	 * @param listener
+	 *            The {@link ApplianceDiscoveryListener} instance to remove
+	 */
+	public void removeApplianceDiscoveryListener(
+			ApplianceDiscoveryListener listener);
 }

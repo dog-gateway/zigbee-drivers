@@ -18,13 +18,7 @@
  */
 package it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet;
 
-import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
-import it.polito.elite.dog.drivers.zigbee.network.info.CmdNotificationInfo;
-import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
-import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
-import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.polito.elite.dog.core.library.model.ControllableDevice;
-import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
 import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
 import it.polito.elite.dog.core.library.model.devicecategory.MeteringPowerOutlet;
@@ -44,6 +38,12 @@ import it.polito.elite.dog.core.library.model.statevalue.OnStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.PowerFactorStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.ReactiveEnergyStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.StateValue;
+import it.polito.elite.dog.core.library.util.LogHelper;
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
+import it.polito.elite.dog.drivers.zigbee.network.info.CmdNotificationInfo;
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
+import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
 import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
 import it.telecomitalia.ah.hac.ApplianceException;
@@ -73,7 +73,7 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver
+public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstance
 		implements MeteringPowerOutlet
 {
 	// the class logger
@@ -499,7 +499,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver
 			else if (attributeName
 					.equals(SimpleMeteringServer.ATTR_PowerFactor_NAME))
 			{
-				double powerFactor = (double) ((Integer) attributeValue
+				double powerFactor = (double) ((Short) attributeValue
 						.getValue()) / 100.0;
 				// notify the new value
 				this.notifyNewPowerFactorValue(DecimalMeasure
@@ -590,7 +590,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver
 		initialPowerFactorValue.setValue(DecimalMeasure
 				.valueOf("0 " + Unit.ONE));
 		this.currentState.setState(
-				PowerFactorMeasurementState.class.getCanonicalName(),
+				PowerFactorMeasurementState.class.getSimpleName(),
 				new PowerFactorMeasurementState(initialPowerFactorValue));
 
 		// reactive energy state
@@ -793,15 +793,13 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver
 				}
 
 				// ------ get divisor and multiplier ----
-				
+
 				// get the divisor needed to convert measured power to W or Wh
 				IAttributeValue divisorValue = cluster.getAttributeValue(
 						SimpleMeteringServer.ATTR_Divisor_NAME, reqContext);
 
 				// the received divisor value
 				int divisor = ((Integer) divisorValue.getValue()).intValue();
-
-				
 
 				// get the multiplier needed to convert measured power to W or
 				// Wh
@@ -818,9 +816,9 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriver
 								+ this.divisor + "]<=" + divisor
 								+ " Multiplier[" + this.multiplier + "]<="
 								+ multiplier);
-				
+
 				// ------ update divisor and multiplier ----
-				
+
 				// update if greater than 1 and different from the one currently
 				// stored
 				if ((divisor > 1) && (divisor != this.divisor))

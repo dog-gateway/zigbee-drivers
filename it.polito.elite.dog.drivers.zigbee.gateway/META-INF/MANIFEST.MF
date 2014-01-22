@@ -15,6 +15,8 @@ Import-Package: it.polito.elite.dog.core.devicefactory.api;version="1.0.0",
  it.polito.elite.dog.drivers.zigbee.network,
  it.polito.elite.dog.drivers.zigbee.network.info,
  it.polito.elite.dog.drivers.zigbee.network.interfaces,
+ it.polito.elite.dog.drivers.zigbee.network.util,
+ it.telecomitalia.ah.cluster.zigbee.general;version="3.2.0",
  it.telecomitalia.ah.hac;version="3.0.2",
  it.telecomitalia.ah.hac.lib;version="3.0.1",
  it.telecomitalia.ah.hac.lib.ext;version="3.4.2",
@@ -23,3 +25,4 @@ Import-Package: it.polito.elite.dog.core.devicefactory.api;version="1.0.0",
  org.osgi.service.device;version="1.1.0",
  org.osgi.service.log;version="1.3.0"
 Bundle-ActivationPolicy: lazy
+Export-Package: it.polito.elite.dog.drivers.zigbee.gateway

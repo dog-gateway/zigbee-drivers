@@ -21,7 +21,7 @@ package it.polito.elite.dog.drivers.zigbee.onoffdevice;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
-import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.polito.elite.dog.core.library.model.ControllableDevice;
@@ -48,7 +48,7 @@ import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
  * @author bonino
  * 
  */
-public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriver implements Lamp, SimpleLamp, Buzzer, MainsPowerOutlet
+public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriverInstance implements Lamp, SimpleLamp, Buzzer, MainsPowerOutlet
 {
 	// the class logger
 	private LogHelper logger;

@@ -30,17 +30,19 @@ import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.CloseStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeDriverInfo;
+import it.polito.elite.dog.drivers.zigbee.network.interfaces.ApplianceDiscoveryListener;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
+import it.polito.elite.dog.drivers.zigbee.network.util.DriverIntersectionData;
 import it.telecomitalia.ah.hac.IAttributeValue;
 import it.telecomitalia.ah.hac.lib.ext.IAppliancesProxy;
 import it.telecomitalia.ah.hac.lib.ext.INetworkManager;
-import it.telecomitalia.ah.hac.IAppliance;
 
-import java.util.List;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
@@ -49,15 +51,15 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
-		ZigBeeGateway
+public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
+		ZigBeeGateway, ApplianceDiscoveryListener
 {
 
 	// the driver logger
 	LogHelper logger;
 
 	// the current list of devices for which dynamic creation can be done
-	private ConcurrentHashMap<String, String> supportedDevices;
+	private Set<ZigBeeDriverInfo> activeDrivers;
 
 	// the appliances proxy used by this gateway driver
 	private IAppliancesProxy appliancesProxy;
@@ -71,9 +73,6 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 	// the device descriptor factory reference
 	private DeviceDescriptorFactory descriptorFactory;
 
-	// the time to wait before attempting automatic device detection
-	private long waitBeforeDeviceInstall = 0;
-
 	/**
 	 * 
 	 * @param zigBeeNetwork
@@ -86,19 +85,22 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 	public ZigBeeGatewayDriverInstance(ZigBeeNetwork network,
 			DeviceFactory deviceFactory, IAppliancesProxy appliancesProxy,
 			INetworkManager networkManager, ControllableDevice device,
-			BundleContext context)
+			Set<ZigBeeDriverInfo> activeDrivers, BundleContext context)
 	{
 		// call the superclass constructor
 		super(network, device);
 
 		// store the device factory reference
-		this.deviceFactory = deviceFactory;
-		
+		// this.deviceFactory = deviceFactory;
+
 		// store the network manager reference
 		this.networkManager = networkManager;
-		
+
 		// store the appliances proxy reference
 		this.appliancesProxy = appliancesProxy;
+
+		// store the active drivers reference
+		this.activeDrivers = activeDrivers;
 
 		// create a logger
 		logger = new LogHelper(context);
@@ -123,80 +125,19 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 		// initialize device states
 		this.initializeStates();
 
+		// add the gateway as new appliance discovery listener
+		this.network.addApplianceDiscoveryListener(this);
+
 	}
 
-	/**
-	 * @return the supportedDevices
-	 */
-	public ConcurrentHashMap<String, String> getSupportedDevices()
-	{
-		return supportedDevices;
-	}
-
-	/**
-	 * @param supportedDevices
-	 *            the supportedDevices to set
-	 */
-	public void setSupportedDevices(
-			ConcurrentHashMap<String, String> supportedDevices)
-	{
-		// simplest updated policy : replacement
-		this.supportedDevices = supportedDevices;
-
-		// debug
-		this.logger.log(LogService.LOG_DEBUG,
-				"Updated dynamic device creation db");
-	}
-
-	// TODO: borrowed from ZWave rewrite to address Zigbee device identification
-	private DeviceDescriptor buildDeviceDescriptor()
+	private DeviceDescriptor buildDeviceDescriptor(String deviceClass,
+			ZigBeeApplianceInfo appliance)
 	{
 		// the device descriptor to return
 		DeviceDescriptor descriptor = null;
 
 		if (this.descriptorFactory != null)
 		{
-
-			// get the new device data
-
-			// get the manufacturer id
-			String manufacturerId = "";
-			String manufacturerProductType = "";
-			String manufacturerProductId = "";
-
-			// wait for instances to be read.... (may be read with a certain
-			// variable delay)
-			try
-			{
-				Thread.sleep(this.waitBeforeDeviceInstall);
-			}
-			catch (InterruptedException e1)
-			{
-				this.logger
-						.log(LogService.LOG_WARNING,
-								"Instance wait time was less than necessary due to interrupted thread, device instantiation might not be accurate.",
-								e1);
-			}
-
-			// build the 4th id (number of instances)
-			int numberOfInstances = 1;
-
-			// build the device unique id
-			String extendedDeviceUniqueId = manufacturerId + "-"
-					+ manufacturerProductType + "-" + manufacturerProductId
-					+ "-" + numberOfInstances;
-
-			// build the device unique id
-			String deviceUniqueId = manufacturerId + "-"
-					+ manufacturerProductType + "-" + manufacturerProductId;
-
-			// get the device class
-			String deviceClass = this.supportedDevices
-					.get(extendedDeviceUniqueId);
-
-			// check if not extended
-			if (deviceClass == null)
-				deviceClass = this.supportedDevices.get(deviceUniqueId);
 
 			// normal workflow...
 			if ((deviceClass != null) && (!deviceClass.isEmpty()))
@@ -206,7 +147,7 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 
 				// store the device name
 				descriptorDefinitionData.put(DeviceDescriptorFactory.NAME,
-						deviceClass + "_" + 1);
+						deviceClass + "_" + appliance.getSerial());
 
 				// store the device description
 				descriptorDefinitionData.put(
@@ -222,7 +163,8 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 						"");
 
 				// store the node id
-				descriptorDefinitionData.put("nodeId", "" + 1);
+				descriptorDefinitionData.put("serialNumber",
+						appliance.getSerial());
 
 				// get the device descriptor
 				try
@@ -239,9 +181,10 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 				}
 
 				// debug dump
-				this.logger.log(LogService.LOG_INFO,
+				this.logger.log(
+						LogService.LOG_INFO,
 						"Detected new device: \n\tdeviceUniqueId: "
-								+ deviceUniqueId + "\n\tdeviceClass: "
+								+ appliance.getSerial() + "\n\tdeviceClass: "
 								+ deviceClass);
 			}
 		}
@@ -263,8 +206,9 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 		try
 		{
 			this.networkManager.openNetwork();
-			if(this.networkManager.isNetworkOpen())
-				this.notifyStateChanged(new NetworkManagementState(new OpenStateValue()));
+			if (this.networkManager.isNetworkOpen())
+				this.notifyStateChanged(new NetworkManagementState(
+						new OpenStateValue()));
 		}
 		catch (Exception e)
 		{
@@ -272,7 +216,7 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 		}
 
 	}
-	
+
 	@Override
 	public void closeNetwork()
 	{
@@ -280,34 +224,30 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 		try
 		{
 			this.networkManager.closeNetwork();
-			if(!this.networkManager.isNetworkOpen())
-				this.notifyStateChanged(new NetworkManagementState(new CloseStateValue()));
-			
-			//TODO: handle device discovery
-			this.discoverNewDevices();
+			if (!this.networkManager.isNetworkOpen())
+				this.notifyStateChanged(new NetworkManagementState(
+						new CloseStateValue()));
 		}
 		catch (Exception e)
 		{
 			this.logger.log(LogService.LOG_ERROR, "Unable to open the network");
 		}
-		
+
 	}
 
 	@Override
 	public void installAppliance(String deviceId)
 	{
-		//TODO: extract the appliance pid given the device URI
-		this.appliancesProxy.installAppliance(deviceId);		
+		// TODO: extract the appliance pid given the device URI
+		this.appliancesProxy.installAppliance(deviceId);
 	}
 
 	@Override
 	public void deleteAppliance(String deviceId)
 	{
-		//TODO: extract the appliance pid given the device URI
-		this.appliancesProxy.deleteAppliance(deviceId);		
+		// TODO: extract the appliance pid given the device URI
+		this.appliancesProxy.deleteAppliance(deviceId);
 	}
-
-	
 
 	@Override
 	public void notifyStateChanged(State newState)
@@ -368,33 +308,67 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriver implements
 
 	}
 
-	/**
-	 * 
-	 */
-	private void discoverNewDevices()
+	@Override
+	public void applianceDiscovered(ZigBeeApplianceInfo applianceInfo)
 	{
-		//get the list of installed appliances...
-		@SuppressWarnings("unchecked")
-		List<IAppliance> appliances = (List<IAppliance>)this.appliancesProxy.getAppliances();
-		
-		//iterate over appliances
-		for(IAppliance currentAppliance : appliances)
+
+		// handle the new appliance
+		this.logger.log(
+				LogService.LOG_INFO,
+				"Detected new appliance with serial: "
+						+ applianceInfo.getSerial()
+						+ "... trying to find a matching device class");
+
+		// prepare the intersection data
+		TreeSet<DriverIntersectionData> matchingDrivers = new TreeSet<DriverIntersectionData>();
+
+		// fill the intersection data
+		for (ZigBeeDriverInfo driverInfo : this.activeDrivers)
 		{
-			//get the appliance serial
-			String currentApplianceSerial = ZigBeeApplianceInfo.extractApplianceSerial(currentAppliance.getPid());
-			
-			//check against the set of managed appliances
-			ZigBeeApplianceInfo currentApplianceInfo = this.network.getZigBeeApplianceInfo(currentApplianceSerial);
-			
-			//if null the appliance is still not configured
-			if(currentApplianceInfo==null)
+			// compute the intersection cardinality
+			int cardinality = driverInfo.getIntersectionCardinality(
+					applianceInfo.getClientClusters(),
+					applianceInfo.getServerClusters());
+
+			if (cardinality > 0)
 			{
-				//handle the new appliance
-				this.logger.log(LogService.LOG_INFO, "Detected new appliance with serial: "+currentApplianceSerial);
-				
-				//try to get the appliance information
-				currentAppliance.getDescriptor().getDeviceType();
+				matchingDrivers.add(new DriverIntersectionData(cardinality,
+						driverInfo));
 			}
 		}
+
+		// check if any intersection has been found
+		if (!matchingDrivers.isEmpty())
+		{
+			// get the best matching driver
+			DriverIntersectionData bestMatch = matchingDrivers.last();
+
+			// build a new device of the driver main class
+			String deviceClass = bestMatch.getDriverInfo().getMainDeviceClass();
+			
+			// build the device descriptor
+			DeviceDescriptor descriptorToAdd = this.buildDeviceDescriptor(
+					deviceClass, applianceInfo);
+
+			// check not null
+			if (descriptorToAdd != null)
+			{
+				// create the device
+				// cross the finger
+				this.deviceFactory.addNewDevice(descriptorToAdd);
+				
+				// log the new appliance installation
+				this.logger.log(LogService.LOG_INFO,
+						"New appliance successfully identified...");
+			}
+
+		}
+		else
+		{
+			// log the detection failure
+			this.logger.log(LogService.LOG_INFO,
+					"No match found, device left for future discovery...");
+		}
+
 	}
 }

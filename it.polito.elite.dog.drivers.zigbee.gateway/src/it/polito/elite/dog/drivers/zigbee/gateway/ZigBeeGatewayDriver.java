@@ -24,27 +24,23 @@ import it.polito.elite.dog.core.library.model.DeviceCostants;
 import it.polito.elite.dog.core.library.model.devicecategory.ZWaveGateway;
 import it.polito.elite.dog.core.library.model.devicecategory.ZigBeeGateway;
 import it.polito.elite.dog.core.library.util.LogHelper;
+import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeDriverInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.telecomitalia.ah.hac.lib.ext.IAppliancesProxy;
 import it.telecomitalia.ah.hac.lib.ext.INetworkManager;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Dictionary;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.cm.ConfigurationException;
-import org.osgi.service.cm.ManagedService;
 import org.osgi.service.device.Device;
 import org.osgi.service.device.Driver;
 import org.osgi.service.log.LogService;
@@ -53,7 +49,7 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeGatewayDriver implements Driver, ManagedService
+public class ZigBeeGatewayDriver implements Driver
 {
 	// The OSGi framework context
 	protected BundleContext context;
@@ -66,10 +62,6 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 
 	// String identifier for driver id
 	public static final String DRIVER_ID = "it.polito.elite.drivers.zigbee.gateway";
-
-	// the key to identify the proper configuration value
-	private static final String WAIT_BEFORE_DEVICE_INSTALL = "waitBeforeDeviceInstall";
-	private static final String DEVICE_DB = "deviceDB";
 
 	// a reference to the network driver (currently not used by this driver
 	// version, in the future might be used to implement gateway-specific
@@ -107,14 +99,7 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 	// the dictionary containing the current snapshot of the driver
 	// configuration, i.e., the list of supported devices and the corresponding
 	// DogOnt types.
-	private ConcurrentHashMap<String, String> supportedDevices;
-
-	// the time to wait before auto-installing devices (to enable complete
-	// command class reporting)
-	private long waitBeforeDeviceInstall;
-
-	// the device database location
-	private String deviceDBLocation;
+	private Set<ZigBeeDriverInfo> activeDriverDetails;
 
 	public ZigBeeGatewayDriver()
 	{
@@ -122,7 +107,8 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 		this.connectedGateways = new ConcurrentHashMap<String, ZigBeeGatewayDriverInstance>();
 
 		// initialize the supported devices map
-		this.supportedDevices = new ConcurrentHashMap<String, String>();
+		this.activeDriverDetails = Collections
+				.synchronizedSet(new HashSet<ZigBeeDriverInfo>());
 
 		// initialize the network driver reference
 		this.network = new AtomicReference<ZigBeeNetwork>();
@@ -136,8 +122,6 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 		// initialize the hac appliances proxy
 		this.hacAppliancesProxy = new AtomicReference<IAppliancesProxy>();
 
-		// init the wait before install time at 0
-		this.waitBeforeDeviceInstall = 0;
 	}
 
 	/**
@@ -150,6 +134,8 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 
 		// init the logger
 		logger = new LogHelper(context);
+		
+		registerDriver();
 	}
 
 	public void deactivate()
@@ -294,9 +280,9 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 			propDriver.put(DeviceCostants.GATEWAY_COUNT,
 					connectedGateways.size());
 
-			regDriver = context.registerService(Driver.class.getName(), this,
-					propDriver);
-			regZigBeeGateway = context.registerService(
+			this.regDriver = this.context.registerService(
+					Driver.class.getName(), this, propDriver);
+			this.regZigBeeGateway = this.context.registerService(
 					ZigBeeGatewayDriver.class.getName(), this, null);
 		}
 	}
@@ -347,7 +333,11 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 			if (!this.isGatewayAvailable(deviceId))
 			{
 				// create a new driver instance
-				ZigBeeGatewayDriverInstance driverInstance = new ZigBeeGatewayDriverInstance(this.network.get(), this.deviceFactory.get(), this.hacAppliancesProxy.get(), this.hacNetworkManager.get(), device, this.context);
+				ZigBeeGatewayDriverInstance driverInstance = new ZigBeeGatewayDriverInstance(
+						this.network.get(), this.deviceFactory.get(),
+						this.hacAppliancesProxy.get(),
+						this.hacNetworkManager.get(), device,
+						this.activeDriverDetails, this.context);
 
 				// associate device and driver
 				device.setDriver(driverInstance);
@@ -366,7 +356,7 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 				propDriver.put(DeviceCostants.GATEWAY_COUNT,
 						connectedGateways.size());
 
-				regDriver.setProperties(propDriver);
+				this.regDriver.setProperties(propDriver);
 			}
 		}
 
@@ -398,133 +388,23 @@ public class ZigBeeGatewayDriver implements Driver, ManagedService
 	}
 
 	/**
-	 * Returns the number of milliseconds to wait before attempting automatic
-	 * device recognition
+	 * Registers the capabilities of an active driver.
 	 * 
-	 * @return
+	 * @param the
+	 *            {@link ZigBeeDriverInfo} instance describing the driver
 	 */
-	public long getWaitBeforeDeviceInstall()
+	public void addActiveDriverDetails(ZigBeeDriverInfo driverInfo)
 	{
-		return waitBeforeDeviceInstall;
-	}
-
-	@Override
-	public void updated(Dictionary<String, ?> config)
-			throws ConfigurationException
-	{
-		// check if configuration is not null, if null... dynamic device
-		// creation will be disabled
-		if (config != null)
-		{
-			// get the time to wait before auto-installation of devices
-			String waitBeforeDeviceInstallAsString = (String) config
-					.get(ZigBeeGatewayDriver.WAIT_BEFORE_DEVICE_INSTALL);
-
-			// try to convert it to a number
-			try
-			{
-				this.waitBeforeDeviceInstall = Long
-						.valueOf(waitBeforeDeviceInstallAsString);
-			}
-			catch (NumberFormatException e)
-			{
-					// no wait
-					this.waitBeforeDeviceInstall = 0;
-			}
-
-			// get the device db
-			// try to get the persistence store directory
-			this.deviceDBLocation = (String) config
-					.get(ZigBeeGatewayDriver.DEVICE_DB);
-
-			// check not null
-			if (deviceDBLocation != null)
-			{
-				// trim leading and trailing spaces
-				this.deviceDBLocation = deviceDBLocation.trim();
-				
-				// check absolute vs relative
-				File deviceDBLocationFile = new File(deviceDBLocation);
-				if (!deviceDBLocationFile.isAbsolute())
-					this.deviceDBLocation = System.getProperty("configFolder")
-							+ "/" + this.deviceDBLocation;
-
-				// load the device db
-				Properties deviceDB = new Properties();
-
-				try
-				{
-					deviceDB.load(new FileReader(this.deviceDBLocation));
-
-					// update the device databse
-					this.updateDeviceDatabase(deviceDB);
-
-					// sync the gateway instances
-					this.syncDeviceDBs();
-				}
-				catch (IOException e)
-				{
-					this.logger
-							.log(LogService.LOG_ERROR,
-									"Error while opening the device database.... dynamic device creation will not be supported!");
-				}
-
-			}
-
-			// register the gateway only when it is fully configured
-			registerDriver();
-		}
+		this.activeDriverDetails.add(driverInfo);
+		
+		this.logger.log(LogService.LOG_INFO, "Added new driver details:\n"+driverInfo);
 	}
 
 	/**
-	 * Updates the inner device database data structure on the basis of the
-	 * given device db as Java properties
-	 * 
-	 * @param config
+	 * Unregisters the capabilities of an active driver
 	 */
-	private void updateDeviceDatabase(Properties config)
+	public void removeActiveDriverDetails(ZigBeeDriverInfo driverInfo)
 	{
-		// debug
-		if (this.supportedDevices.isEmpty())
-			this.logger.log(LogService.LOG_DEBUG,
-					"Creating dynamic device creation db...");
-		else
-			this.logger.log(LogService.LOG_DEBUG,
-					"Updating dynamic device creation db...");
-		// store the configuration (deep copy, check if needed)
-		Enumeration<?> keys = config.propertyNames();
-
-		// iterate over the keys
-		while (keys.hasMoreElements())
-		{
-			// get the device unique id
-			// (manufacturer-productseries-productid)
-			String deviceId = (String) keys.nextElement();
-			String deviceType = (String) config.get(deviceId);
-
-			// store the couple
-			this.supportedDevices.put(deviceId, deviceType);
-		}
-
-		// debug
-		this.logger.log(LogService.LOG_DEBUG,
-				"Completed dynamic device creation db");
-	}
-
-	/**
-	 * sync the current device database for all gateway instances
-	 */
-	private void syncDeviceDBs()
-	{
-		// synchronize over the connected gateways list
-		synchronized (this.connectedGateways)
-		{
-			// update connected drivers
-			for (String key : this.connectedGateways.keySet())
-			{
-				this.connectedGateways.get(key).setSupportedDevices(
-						this.supportedDevices);
-			}
-		}
+		this.activeDriverDetails.remove(driverInfo);
 	}
 }
