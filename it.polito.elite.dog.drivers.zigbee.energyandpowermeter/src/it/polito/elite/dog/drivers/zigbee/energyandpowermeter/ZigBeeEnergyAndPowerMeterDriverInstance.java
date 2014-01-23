@@ -32,7 +32,7 @@ import it.polito.elite.dog.core.library.model.state.SinglePhaseReactiveEnergySta
 import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.ActiveEnergyStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.ActivePowerStateValue;
-import it.polito.elite.dog.core.library.model.statevalue.OffStateValue;
+import it.polito.elite.dog.core.library.model.statevalue.OnStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.ReactiveEnergyStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.StateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
@@ -377,7 +377,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 		// set the initial state at off
 		this.currentState.setState(OnOffState.class.getSimpleName(),
-				new OnOffState(new OffStateValue()));
+				new OnOffState(new OnStateValue()));
 
 		// active power state
 		ActivePowerStateValue initialActivePowerValue = new ActivePowerStateValue();

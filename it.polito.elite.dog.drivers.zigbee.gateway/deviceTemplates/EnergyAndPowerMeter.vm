@@ -2,57 +2,44 @@
 <dhc:dogHomeConfiguration xmlns:dhc="http://elite.polito.it/dogHomeConfiguration">
 	<dhc:controllables>
 		<dhc:device domoticSystem="ZigBee" id="$name"
-			class="MeteringPowerOutlet" gateway="$gateway">
+			class="EnergyAndPowerMeter" gateway="$gateway">
 			<dhc:description>$description
 			</dhc:description>
 			<dhc:isIn>$location</dhc:isIn>
 			<dhc:param value="$serialNumber" name="serialNumber" />
-			<dhc:controlFunctionality class="OnOffFunctionality">
+			<dhc:controlFunctionality
+				class="SinglePhaseActivePowerMeasurementFunctionality">
 				<dhc:commands>
-					<dhc:command id="OffCommand_$name" name="OffCommand_$name"
-						class="OffCommand">
-						<dhc:param value="off" name="realCommandName" />
-					</dhc:command>
-					<dhc:command id="OnCommand_$name" name="OnCommand_$name" class="OnCommand">
-						<dhc:param value="on" name="realCommandName" />
-					</dhc:command>
-				</dhc:commands>
-			</dhc:controlFunctionality>
-			<dhc:controlFunctionality class="SinglePhaseActivePowerMeasurementFunctionality">
-				<dhc:commands>
-					<dhc:command id="Get1PhaseActivePowerCommand_$name" name="Get1PhaseActivePowerCommand_$name" class="Get1PhaseActivePowerCommand">
+					<dhc:command id="Get1PhaseActivePowerCommand_$name"
+						name="Get1PhaseActivePowerCommand_$name" class="Get1PhaseActivePowerCommand">
 						<dhc:param value="getActivePower" name="realCommandName" />
 						<dhc:param value="Measure" name="returnType" />
 					</dhc:command>
 				</dhc:commands>
 			</dhc:controlFunctionality>
-			<dhc:controlFunctionality class="SinglePhaseActiveEnergyMeasurementFunctionality">
+			<dhc:controlFunctionality
+				class="SinglePhaseActiveEnergyMeasurementFunctionality">
 				<dhc:commands>
-					<dhc:command id="Get1PhaseActiveEnergyCommand_$name" name="Get1PhaseActiveEnergyCommand_$name" class="Get1PhaseActiveEnergyCommand">
+					<dhc:command id="Get1PhaseActiveEnergyCommand_$name"
+						name="Get1PhaseActiveEnergyCommand_$name" class="Get1PhaseActiveEnergyCommand">
 						<dhc:param value="getActiveEnergyValue" name="realCommandName" />
 						<dhc:param value="Measure" name="returnType" />
 					</dhc:command>
 				</dhc:commands>
 			</dhc:controlFunctionality>
-			<dhc:controlFunctionality class="SinglePhaseReactiveEnergyMeasurementFunctionality">
+			<dhc:controlFunctionality
+				class="SinglePhaseReactiveEnergyMeasurementFunctionality">
 				<dhc:commands>
-					<dhc:command id="Get1PhaseReactiveEnergyCommand_$name" name="Get1PhaseReactiveEnergyCommand_$name" class="Get1PhaseReactiveEnergyCommand">
+					<dhc:command id="Get1PhaseReactiveEnergyCommand_$name"
+						name="Get1PhaseReactiveEnergyCommand_$name" class="Get1PhaseReactiveEnergyCommand">
 						<dhc:param value="getReactiveEnergyValue" name="realCommandName" />
-						<dhc:param value="Measure" name="returnType" />
-					</dhc:command>
-				</dhc:commands>
-			</dhc:controlFunctionality>
-			<dhc:controlFunctionality class="PowerFactorMeasurementFunctionality">
-				<dhc:commands>
-					<dhc:command id="GetPowerFactorCommand_$name" name="GetPowerFactorCommand_$name" class="GetPowerFactorCommand">
-						<dhc:param value="getPowerFactor" name="realCommandName" />
 						<dhc:param value="Measure" name="returnType" />
 					</dhc:command>
 				</dhc:commands>
 			</dhc:controlFunctionality>
 			<dhc:notificationFunctionality class="StateChangeNotificationFunctionality">
 				<dhc:notifications>
-					<dhc:notification name="StateChangeNotification_$name"
+					<dhc:notification name="StateChangeNotification_1"
 						class="StateChangeNotification">
 						<dhc:param value="1" name="nParams" />
 						<dhc:param value="stateChanged" name="notificationName" />
@@ -64,7 +51,8 @@
 				class="SinglePhaseReactiveEnergyMeasurementNotificationFunctionality">
 				<dhc:notifications>
 					<dhc:notification
-						name="TotalReactiveEnergyMeasurementNotification_$name" class="SinglePhaseReactiveEnergyMeasurementNotification">
+						name="TotalReactiveEnergyMeasurementNotification_$name"
+						class="SinglePhaseReactiveEnergyMeasurementNotification">
 						<dhc:param value="newReactiveEnergyValue" name="notificationName" />
 						<dhc:param name="unitOfMeasure" value="Varh" />
 						<dhc:param type="Measure" value="value" name="notificationParamName" />
@@ -74,7 +62,8 @@
 			<dhc:notificationFunctionality
 				class="SinglePhaseActiveEnergyMeasurementNotificationFunctionality">
 				<dhc:notifications>
-					<dhc:notification name="TotalActiveEnergyMeasurementNotification_$name"
+					<dhc:notification
+						name="TotalActiveEnergyMeasurementNotification_$name"
 						class="SinglePhaseActiveEnergyMeasurementNotification">
 						<dhc:param value="newActiveEnergyValue" name="notificationName" />
 						<dhc:param name="unitOfMeasure" value="Wh" />
@@ -83,19 +72,10 @@
 				</dhc:notifications>
 			</dhc:notificationFunctionality>
 			<dhc:notificationFunctionality
-				class="PowerFactorMeasurementNotificationFunctionality">
-				<dhc:notifications>
-					<dhc:notification name="PowerFactorMeasurementNotification_$name"
-						class="PowerFactorMeasurementNotification">
-						<dhc:param value="newPowerFactorValue" name="notificationName" />
-						<dhc:param type="Measure" value="powerfactor" name="notificationParamName" />
-					</dhc:notification>
-				</dhc:notifications>
-			</dhc:notificationFunctionality>
-			<dhc:notificationFunctionality
 				class="SinglePhaseActivePowerMeasurementNotificationFunctionality">
 				<dhc:notifications>
-					<dhc:notification name="SinglePhaseActivePowerMeasurementNotification_$name"
+					<dhc:notification
+						name="SinglePhaseActivePowerMeasurementNotification_$name"
 						class="SinglePhaseActivePowerMeasurementNotification">
 						<dhc:param value="2" name="nParams" />
 						<dhc:param value="newActivePowerValue" name="notificationName" />
@@ -103,7 +83,7 @@
 						<dhc:param type="Measure" value="powerValue" name="notificationParamName" />
 					</dhc:notification>
 				</dhc:notifications>
-			</dhc:notificationFunctionality>			
+			</dhc:notificationFunctionality>
 			<dhc:state class="OnOffState">
 				<dhc:statevalues>
 					<dhc:statevalue name="off" class="OffStateValue" />

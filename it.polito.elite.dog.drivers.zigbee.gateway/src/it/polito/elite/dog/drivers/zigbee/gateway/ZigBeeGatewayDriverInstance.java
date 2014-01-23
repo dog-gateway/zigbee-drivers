@@ -91,7 +91,7 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		super(network, device);
 
 		// store the device factory reference
-		// this.deviceFactory = deviceFactory;
+		this.deviceFactory = deviceFactory;
 
 		// store the network manager reference
 		this.networkManager = networkManager;
@@ -128,69 +128,6 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		// add the gateway as new appliance discovery listener
 		this.network.addApplianceDiscoveryListener(this);
 
-	}
-
-	private DeviceDescriptor buildDeviceDescriptor(String deviceClass,
-			ZigBeeApplianceInfo appliance)
-	{
-		// the device descriptor to return
-		DeviceDescriptor descriptor = null;
-
-		if (this.descriptorFactory != null)
-		{
-
-			// normal workflow...
-			if ((deviceClass != null) && (!deviceClass.isEmpty()))
-			{
-				// create a descriptor definition map
-				HashMap<String, Object> descriptorDefinitionData = new HashMap<String, Object>();
-
-				// store the device name
-				descriptorDefinitionData.put(DeviceDescriptorFactory.NAME,
-						deviceClass + "_" + appliance.getSerial());
-
-				// store the device description
-				descriptorDefinitionData.put(
-						DeviceDescriptorFactory.DESCRIPTION,
-						"New Device of type " + deviceClass);
-
-				// store the device gateway
-				descriptorDefinitionData.put(DeviceDescriptorFactory.GATEWAY,
-						this.device.getDeviceId());
-
-				// store the device location
-				descriptorDefinitionData.put(DeviceDescriptorFactory.LOCATION,
-						"");
-
-				// store the node id
-				descriptorDefinitionData.put("serialNumber",
-						appliance.getSerial());
-
-				// get the device descriptor
-				try
-				{
-					descriptor = this.descriptorFactory.getDescriptor(
-							descriptorDefinitionData, deviceClass);
-				}
-				catch (Exception e)
-				{
-					this.logger
-							.log(LogService.LOG_ERROR,
-									"Error while creating DeviceDescriptor for the just added device ",
-									e);
-				}
-
-				// debug dump
-				this.logger.log(
-						LogService.LOG_INFO,
-						"Detected new device: \n\tdeviceUniqueId: "
-								+ appliance.getSerial() + "\n\tdeviceClass: "
-								+ deviceClass);
-			}
-		}
-
-		// return
-		return descriptor;
 	}
 
 	@Override
@@ -311,7 +248,6 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 	@Override
 	public void applianceDiscovered(ZigBeeApplianceInfo applianceInfo)
 	{
-
 		// handle the new appliance
 		this.logger.log(
 				LogService.LOG_INFO,
@@ -326,41 +262,40 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		for (ZigBeeDriverInfo driverInfo : this.activeDrivers)
 		{
 			// compute the intersection cardinality
-			int cardinality = driverInfo.getIntersectionCardinality(
-					applianceInfo.getClientClusters(),
-					applianceInfo.getServerClusters());
+			DriverIntersectionData intersectionData = new DriverIntersectionData(
+					driverInfo, applianceInfo);
 
-			if (cardinality > 0)
+			// debug
+			this.logger.log(LogService.LOG_DEBUG,
+					"Computing intersection for " + driverInfo.getDriverName()
+							+ "(" + driverInfo.getDriverVersion() + "):\n"
+							+ intersectionData);
+			this.logger.log(LogService.LOG_DEBUG, "Computing intersection for "
+					+ driverInfo.getDriverName() + "(basicClusterCardinality: "
+					+ driverInfo.getBasicClustersCardinality());
+
+			if (intersectionData.isPerfect())
 			{
-				matchingDrivers.add(new DriverIntersectionData(cardinality,
-						driverInfo));
+				// stop and create the driver
+				createDevice(intersectionData);
+				break;
+			}
+			else if ((intersectionData.getCardinality()
+					- driverInfo.getBasicClustersCardinality()) > 0)
+			{
+				matchingDrivers.add(intersectionData);
 			}
 		}
 
 		// check if any intersection has been found
 		if (!matchingDrivers.isEmpty())
 		{
+			// debug
+			this.logger.log(LogService.LOG_DEBUG, "Computed ranking: "
+					+ matchingDrivers);
+
 			// get the best matching driver
-			DriverIntersectionData bestMatch = matchingDrivers.last();
-
-			// build a new device of the driver main class
-			String deviceClass = bestMatch.getDriverInfo().getMainDeviceClass();
-			
-			// build the device descriptor
-			DeviceDescriptor descriptorToAdd = this.buildDeviceDescriptor(
-					deviceClass, applianceInfo);
-
-			// check not null
-			if (descriptorToAdd != null)
-			{
-				// create the device
-				// cross the finger
-				this.deviceFactory.addNewDevice(descriptorToAdd);
-				
-				// log the new appliance installation
-				this.logger.log(LogService.LOG_INFO,
-						"New appliance successfully identified...");
-			}
+			createDevice(matchingDrivers.last());
 
 		}
 		else
@@ -370,5 +305,92 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 					"No match found, device left for future discovery...");
 		}
 
+	}
+
+	private void createDevice(DriverIntersectionData intersectionData)
+	{
+		// build a new device of the driver main class
+		String deviceClass = intersectionData.getDriverInfo()
+				.getMainDeviceClass();
+
+		// build the device descriptor
+		DeviceDescriptor descriptorToAdd = this.buildDeviceDescriptor(
+				deviceClass, intersectionData.getApplianceInfo());
+
+		// check not null
+		if (descriptorToAdd != null)
+		{
+			// create the device
+			// cross the finger
+			this.deviceFactory.addNewDevice(descriptorToAdd);
+
+			// log the new appliance installation
+			this.logger.log(LogService.LOG_INFO,
+					"New appliance successfully identified...");
+		}
+
+	}
+
+	private DeviceDescriptor buildDeviceDescriptor(String deviceClass,
+			ZigBeeApplianceInfo appliance)
+	{
+		// the device descriptor to return
+		DeviceDescriptor descriptor = null;
+
+		if (this.descriptorFactory != null)
+		{
+
+			// normal workflow...
+			if ((deviceClass != null) && (!deviceClass.isEmpty()))
+			{
+				// create a descriptor definition map
+				HashMap<String, Object> descriptorDefinitionData = new HashMap<String, Object>();
+
+				// store the device name
+				descriptorDefinitionData.put(DeviceDescriptorFactory.NAME,
+						deviceClass + "_" + appliance.getSerial());
+
+				// store the device description
+				descriptorDefinitionData.put(
+						DeviceDescriptorFactory.DESCRIPTION,
+						"New Device of type " + deviceClass);
+
+				// store the device gateway
+				descriptorDefinitionData.put(DeviceDescriptorFactory.GATEWAY,
+						this.device.getDeviceId());
+
+				// store the device location
+				descriptorDefinitionData.put(DeviceDescriptorFactory.LOCATION,
+						"");
+
+				// store the node id
+				descriptorDefinitionData.put("serialNumber",
+						appliance.getSerial());
+
+				// get the device descriptor
+				try
+				{
+					descriptor = this.descriptorFactory.getDescriptor(
+							descriptorDefinitionData, deviceClass);
+				}
+				catch (Exception e)
+				{
+					this.logger
+							.log(LogService.LOG_ERROR,
+									"Error while creating DeviceDescriptor for the just added device ",
+									e);
+				}
+
+				// debug dump
+				this.logger.log(
+						LogService.LOG_INFO,
+						"Detected new device: \n\tdeviceUniqueId: "
+								+ appliance.getSerial() + "\n\tdeviceClass: "
+								+ deviceClass);
+			}
+		}
+
+		// return
+		return descriptor;
 	}
 }

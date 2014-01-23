@@ -112,8 +112,8 @@ public class ZigBeeMeteringPowerOutletDriver extends ZigBeeDriver implements
 				.toString());
 		this.driverInfo.setMainDeviceClass(MeteringPowerOutlet.class
 				.getSimpleName());
-		this.driverInfo.addServerClusters(OnOffServer.class.getName(),
-				SimpleMeteringServer.class.getName());
+		this.driverInfo.addServerClusters(OnOffServer.class.getName().replaceAll("Server", ""),
+				SimpleMeteringServer.class.getName().replaceAll("Server", ""));
 
 		this.logger.log(LogService.LOG_DEBUG,
 				ZigBeeMeteringPowerOutletDriver.logId + "Activated...");

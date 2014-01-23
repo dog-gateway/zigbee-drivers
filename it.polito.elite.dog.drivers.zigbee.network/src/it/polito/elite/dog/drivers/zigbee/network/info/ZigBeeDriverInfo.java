@@ -3,12 +3,16 @@
  */
 package it.polito.elite.dog.drivers.zigbee.network.info;
 
+import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
+import it.polito.elite.dog.drivers.zigbee.network.util.Sets;
+import it.telecomitalia.ah.cluster.ah.ConfigServer;
+import it.telecomitalia.ah.cluster.zigbee.general.BasicServer;
+import it.telecomitalia.ah.cluster.zigbee.general.IdentifyServer;
+import it.telecomitalia.ah.cluster.zigbee.general.TimeClient;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
-import it.polito.elite.dog.drivers.zigbee.network.util.Sets;
 
 /**
  * @author bonino
@@ -30,6 +34,9 @@ public class ZigBeeDriverInfo
 
 	// the appliance client Clusters
 	private HashSet<String> clientClusters;
+	
+	// the cardinality of basic clusters
+	private int basicClustersCardinality;
 
 	/**
 	 * Create a new driver description object (ZigBeeDriverInfo) attached to the
@@ -43,6 +50,18 @@ public class ZigBeeDriverInfo
 		// init the cluster sets
 		this.clientClusters = new HashSet<String>();
 		this.serverClusters = new HashSet<String>();
+
+		// add common client clusters
+		Collections.addAll(this.clientClusters, TimeClient.class.getName()
+				.replaceAll("Client", ""));
+
+		// add common server clusters
+		Collections.addAll(this.serverClusters, BasicServer.class.getName()
+				.replaceAll("Server", ""), IdentifyServer.class.getName()
+				.replaceAll("Server", ""), ConfigServer.class.getName()
+				.replaceAll("Server", ""));
+		
+		this.basicClustersCardinality = this.clientClusters.size()+this.serverClusters.size();
 	}
 
 	/**
@@ -160,6 +179,13 @@ public class ZigBeeDriverInfo
 	public void setMainDeviceClass(String driverMainClass)
 	{
 		this.mainDeviceClass = driverMainClass;
+	}
+	
+	
+
+	public int getBasicClustersCardinality()
+	{
+		return basicClustersCardinality;
 	}
 
 	@Override

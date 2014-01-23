@@ -108,7 +108,7 @@ public class ZigBeeEnergyAndPowerMeterDriver extends ZigBeeDriver implements Dri
 		this.driverInfo.setDriverVersion(context.getBundle().getVersion()
 				.toString());
 		this.driverInfo.setMainDeviceClass(EnergyAndPowerMeter.class.getSimpleName());
-		this.driverInfo.addServerClusters(SimpleMeteringServer.class.getName());
+		this.driverInfo.addServerClusters(SimpleMeteringServer.class.getName().replaceAll("Server", ""));
 
 		this.logger.log(LogService.LOG_DEBUG,
 				ZigBeeEnergyAndPowerMeterDriver.logId + "Activated...");

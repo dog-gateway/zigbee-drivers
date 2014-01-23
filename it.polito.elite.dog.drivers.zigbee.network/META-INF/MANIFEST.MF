@@ -6,9 +6,10 @@ Bundle-Version: 1.0.0
 Bundle-Vendor: eLite - Politecnico di Torino (http://elite.polito.it)
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Service-Component: OSGI-INF/component.xml
-Import-Package: it.polito.elite.dog.core.library.model.devicecategory,
+Import-Package: it.polito.elite.dog.core.library.model,
+ it.polito.elite.dog.core.library.model.devicecategory,
  it.polito.elite.dog.core.library.util,
- it.polito.elite.dog.core.library.model,
+ it.telecomitalia.ah.cluster.ah;version="3.0.1",
  it.telecomitalia.ah.cluster.zigbee.general;version="3.1.0",
  it.telecomitalia.ah.cluster.zigbee.metering;version="3.1.0",
  it.telecomitalia.ah.hac;version="3.0.2",

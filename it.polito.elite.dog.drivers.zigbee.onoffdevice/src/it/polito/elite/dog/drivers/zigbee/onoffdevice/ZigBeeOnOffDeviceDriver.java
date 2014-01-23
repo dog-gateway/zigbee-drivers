@@ -18,16 +18,16 @@
  */
 package it.polito.elite.dog.drivers.zigbee.onoffdevice;
 
+import it.polito.elite.dog.core.library.model.ControllableDevice;
+import it.polito.elite.dog.core.library.model.DeviceCostants;
+import it.polito.elite.dog.core.library.model.devicecategory.Lamp;
+import it.polito.elite.dog.core.library.model.devicecategory.OnOffOutput;
+import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.drivers.zigbee.gateway.ZigBeeGatewayDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriver;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeDriverInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.polito.elite.dog.core.library.model.DeviceCostants;
-import it.polito.elite.dog.core.library.model.ControllableDevice;
-import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.core.library.model.devicecategory.Lamp;
-import it.polito.elite.dog.core.library.model.devicecategory.OnOffOutput;
 import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
 
 import java.util.Dictionary;
@@ -120,8 +120,9 @@ public class ZigBeeOnOffDeviceDriver extends ZigBeeDriver implements Driver, Man
 		this.driverInfo.setDriverVersion(context.getBundle().getVersion()
 				.toString());
 		this.driverInfo.setMainDeviceClass(OnOffOutput.class.getSimpleName());
-		this.driverInfo.addServerClusters(OnOffServer.class.getName());
+		this.driverInfo.addServerClusters(OnOffServer.class.getName().replaceAll("Server", ""));
 
+		
 		// fill the categories
 		properFillDeviceCategories();
 
