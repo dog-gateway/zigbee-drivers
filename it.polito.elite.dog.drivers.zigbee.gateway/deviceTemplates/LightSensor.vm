@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dhc:dogHomeConfiguration xmlns:dhc="http://elite.polito.it/dogHomeConfiguration">
+	<dhc:controllables>
+		<dhc:device class="LightSensor" id="$name"
+			domoticSystem="ZigBee" gateway="$gateway">
+			<dhc:description>$description</dhc:description>
+			<dhc:isIn>$location</dhc:isIn>
+			<dhc:param value="$serialNumber" name="serialNumber" />
+			<dhc:controlFunctionality class="LightSensingFunctionality">
+				<dhc:commands>
+					<dhc:command class="GetLuminanceCommand"
+						name="GetLuminanceCommand_$name" id="GetLuminanceCommand_$name">
+						<dhc:param name="realCommandName" value="getLuminance" />
+						<dhc:param name="returnType" value="Measure" />
+					</dhc:command>
+				</dhc:commands>
+			</dhc:controlFunctionality>
+			<dhc:notificationFunctionality class="StateChangeNotificationFunctionality">
+				<dhc:notifications>
+					<dhc:notification class="StateChangeNotification"
+						id="StateChangeNotification_$name">
+						<dhc:param name="notificationName" value="stateChanged" />
+						<dhc:param name="notificationParamName" value="newState"
+							type="State" />
+					</dhc:notification>
+				</dhc:notifications>
+			</dhc:notificationFunctionality>
+			<dhc:notificationFunctionality
+				class="LuminosityNotificationFunctionality">
+				<dhc:notifications>
+					<dhc:notification class="LuminosityMeasurementNotification"
+						id="LuminosityMeasurementNotification_$name">
+						<dhc:param name="nParams" value="2" />
+						<dhc:param name="notificationName" value="newLuminosityValue" />
+						<dhc:param name="unitOfMeasure" value="Lux" />
+						<dhc:param name="notificationParamName" value="luminosityValue"
+							type="Measure" />
+					</dhc:notification>
+				</dhc:notifications>
+			</dhc:notificationFunctionality>
+			
+			<dhc:state class="LightIntensityState">
+				<dhc:statevalues>
+					<dhc:statevalue class="LevelStateValue" name="" />
+				</dhc:statevalues>
+			</dhc:state>
+		</dhc:device>
+	</dhc:controllables>
+</dhc:dogHomeConfiguration>
