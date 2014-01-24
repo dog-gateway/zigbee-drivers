@@ -21,8 +21,8 @@ public class DriverIntersectionData implements
 	private double applianceCompleteness;
 	private double score;
 	private boolean isPerfect;
-	private static double MAX_SCORE=1.0;
-	private static double MAX_RAW_SCORE=5.0; //MIN_RAW_SCORE = 0.0
+	private static double MAX_SCORE = 1.0;
+	private static double MAX_RAW_SCORE = 4.0; // MIN_RAW_SCORE = 0.0
 
 	/**
 	 * 
@@ -43,36 +43,45 @@ public class DriverIntersectionData implements
 
 		// compute the driverSideCompleteness
 		this.driverCompleteness = (double) this.cardinality
-				/ (double)(this.driverInfo.getClientClusters().size() + this.driverInfo
+				/ (double) (this.driverInfo.getClientClusters().size() + this.driverInfo
 						.getServerClusters().size());
 
 		// compute the appliance side completeness
-		this.applianceCompleteness = (double)this.cardinality
-				/ (double)(this.applianceInfo.getClientClusters().size() + this.applianceInfo
+		this.applianceCompleteness = (double) this.cardinality
+				/ (double) (this.applianceInfo.getClientClusters().size() + this.applianceInfo
 						.getServerClusters().size());
 
-		if((this.applianceCompleteness+this.driverCompleteness) == 2)
+		if ((this.applianceCompleteness + this.driverCompleteness) == 2)
 		{
-			//perfect match
+			// perfect match
 			this.isPerfect = true;
-			
-			//set the score at maximum
+
+			// set the score at maximum
 			this.score = DriverIntersectionData.MAX_SCORE;
 		}
 		else
 		{
 			// not perfect
 			this.isPerfect = false;
-			
+
 			// compute the intersection score (between 0 and 1)
-			this.score = ((2 * Math.floor(this.driverCompleteness) + Math
-					.floor(this.applianceCompleteness))
-					+ this.applianceCompleteness
-					+ (3 - Math.ceil(Math.abs((this.applianceCompleteness - 1))) - Math
-							.ceil(Math.abs((this.driverCompleteness - 1))))
-					* this.driverCompleteness)/DriverIntersectionData.MAX_RAW_SCORE;
+			/*
+			 * this.score = ((2 * Math.floor(this.driverCompleteness) + Math
+			 * .floor(this.applianceCompleteness)) + this.applianceCompleteness
+			 * + (3 - Math.ceil(Math.abs((this.applianceCompleteness - 1))) -
+			 * Math .ceil(Math.abs((this.driverCompleteness - 1))))
+			 * this.driverCompleteness)/DriverIntersectionData.MAX_RAW_SCORE;
+			 */
+
+			// compute the intersection score (between 0 and 1), version 2 more
+			// elegant
+			double fCa = Math.floor(this.applianceCompleteness);
+			double fCb = Math.floor(this.driverCompleteness);
+
+			this.score = ((1 - fCa) * (1 - fCb)* (this.applianceCompleteness + this.driverCompleteness) 
+					+ fCb * (3 + this.applianceCompleteness) 
+					+ fCa * (2 + this.driverCompleteness))/DriverIntersectionData.MAX_RAW_SCORE; 
 		}
-		
 
 	}
 
@@ -80,7 +89,6 @@ public class DriverIntersectionData implements
 	{
 		return driverInfo;
 	}
-	
 
 	public ZigBeeApplianceInfo getApplianceInfo()
 	{
@@ -126,7 +134,5 @@ public class DriverIntersectionData implements
 				+ ", applianceCompleteness=" + applianceCompleteness
 				+ ", score=" + score + ", isPerfect=" + isPerfect + "]";
 	}
-	
-	
 
 }

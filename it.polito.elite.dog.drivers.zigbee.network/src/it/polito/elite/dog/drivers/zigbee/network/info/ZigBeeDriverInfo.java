@@ -8,7 +8,7 @@ import it.polito.elite.dog.drivers.zigbee.network.util.Sets;
 import it.telecomitalia.ah.cluster.ah.ConfigServer;
 import it.telecomitalia.ah.cluster.zigbee.general.BasicServer;
 import it.telecomitalia.ah.cluster.zigbee.general.IdentifyServer;
-import it.telecomitalia.ah.cluster.zigbee.general.TimeClient;
+//import it.telecomitalia.ah.cluster.zigbee.general.TimeClient;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,8 +52,8 @@ public class ZigBeeDriverInfo
 		this.serverClusters = new HashSet<String>();
 
 		// add common client clusters
-		Collections.addAll(this.clientClusters, TimeClient.class.getName()
-				.replaceAll("Client", ""));
+		//Collections.addAll(this.clientClusters, TimeClient.class.getName()
+		//		.replaceAll("Client", ""));
 
 		// add common server clusters
 		Collections.addAll(this.serverClusters, BasicServer.class.getName()
