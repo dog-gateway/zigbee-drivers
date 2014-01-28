@@ -1,12 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: ZigBeeOnOffDeviceDriver
-Bundle-SymbolicName: it.polito.elite.dog.drivers.zigbee.onoffdevice
+Bundle-Name: DoorSensor
+Bundle-SymbolicName: it.polito.elite.dog.drivers.zigbee.doorwindowsensor
 Bundle-Version: 1.0.0
+Bundle-Vendor: it.polito.elite
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Service-Component: OSGI-INF/component.xml
 Import-Package: it.polito.elite.dog.core.library.model,
  it.polito.elite.dog.core.library.model.devicecategory,
+ it.polito.elite.dog.core.library.model.notification,
  it.polito.elite.dog.core.library.model.state,
  it.polito.elite.dog.core.library.model.statevalue,
  it.polito.elite.dog.core.library.util,
@@ -16,6 +18,7 @@ Import-Package: it.polito.elite.dog.core.library.model,
  it.polito.elite.dog.drivers.zigbee.network.info,
  it.polito.elite.dog.drivers.zigbee.network.interfaces,
  it.telecomitalia.ah.cluster.zigbee.general;version="3.1.0",
+ it.telecomitalia.ah.cluster.zigbee.security;version="3.1.0",
  it.telecomitalia.ah.hac;version="3.0.2",
  it.telecomitalia.ah.hac.lib;version="3.0.1",
  org.osgi.framework,

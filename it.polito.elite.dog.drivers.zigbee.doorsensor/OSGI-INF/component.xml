@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="it.polito.elite.dog.drivers.zigbee.doorwindowsensor">
+   <implementation class="it.polito.elite.dog.drivers.zigbee.doorsensor.ZigBeeDoorWindowSensorDriver"/>
+   <service>
+      <provide interface="org.osgi.service.cm.ManagedService"/>
+   </service>
+   <reference bind="addedNetworkDriver" cardinality="1..1" interface="it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork" name="ZigBeeNetwork" policy="dynamic" unbind="removedNetworkDriver"/>
+   <reference bind="addedGatewayDriver" cardinality="1..1" interface="it.polito.elite.dog.drivers.zigbee.gateway.ZigBeeGatewayDriver" name="ZigBeeGatewayDriver" policy="dynamic" unbind="removedGatewayDriver"/>
+   <property name="service.pid" type="String" value="it.polito.elite.dog.drivers.zigbee.doorwindowsensor"/>
+</scr:component>

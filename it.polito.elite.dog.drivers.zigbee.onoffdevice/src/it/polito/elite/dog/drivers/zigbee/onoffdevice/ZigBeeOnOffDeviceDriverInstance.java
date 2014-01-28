@@ -31,6 +31,7 @@ import it.polito.elite.dog.core.library.model.devicecategory.Buzzer;
 import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
 import it.polito.elite.dog.core.library.model.devicecategory.Lamp;
 import it.polito.elite.dog.core.library.model.devicecategory.MainsPowerOutlet;
+import it.polito.elite.dog.core.library.model.devicecategory.OnOffOutput;
 import it.polito.elite.dog.core.library.model.devicecategory.SimpleLamp;
 import it.polito.elite.dog.core.library.model.state.OnOffState;
 import it.polito.elite.dog.core.library.model.state.State;
@@ -48,7 +49,7 @@ import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
  * @author bonino
  * 
  */
-public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriverInstance implements Lamp, SimpleLamp, Buzzer, MainsPowerOutlet
+public class ZigBeeOnOffDeviceDriverInstance extends ZigBeeDriverInstance implements Lamp, SimpleLamp, Buzzer, MainsPowerOutlet, OnOffOutput
 {
 	// the class logger
 	private LogHelper logger;

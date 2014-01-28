@@ -137,6 +137,17 @@ public class ZigBeeDriverInfo
 	{
 		Collections.addAll(this.serverClusters, serverClusters);
 	}
+	
+	/**
+	 * Add one or more (comma separated) server cluster to the set of supported
+	 * clusters
+	 * 
+	 * @param serverClusters
+	 */
+	public void addServerClusters(Set<String> serverClusters)
+	{
+		this.serverClusters.addAll(serverClusters);
+	}
 
 	/**
 	 * Get the client-side clusters handled by the driver. This set of clusters
@@ -159,6 +170,17 @@ public class ZigBeeDriverInfo
 	public void addClientClusters(String... clientClusters)
 	{
 		Collections.addAll(this.serverClusters, clientClusters);
+	}
+	
+	/**
+	 * Add one or more (comma separated) client cluster to the set of supported
+	 * clusters
+	 * 
+	 * @param clientClusters
+	 */
+	public void addClientClusters(Set<String> clientClusters)
+	{
+		this.serverClusters.addAll(clientClusters);
 	}
 
 	/**
