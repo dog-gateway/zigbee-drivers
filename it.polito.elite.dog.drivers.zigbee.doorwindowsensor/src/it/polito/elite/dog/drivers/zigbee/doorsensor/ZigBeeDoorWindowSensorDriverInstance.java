@@ -28,11 +28,15 @@ import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.CloseStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
+import it.polito.elite.dog.drivers.zigbee.doorsensor.cluster.DoorWindowsSensorOnOffClientCluster;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.telecomitalia.ah.cluster.zigbee.security.IASZoneServer;
 import it.telecomitalia.ah.hac.ApplianceException;
+import it.telecomitalia.ah.hac.IAppliance;
+import it.telecomitalia.ah.hac.IApplicationEndPoint;
+import it.telecomitalia.ah.hac.IApplicationService;
 import it.telecomitalia.ah.hac.IAttributeValue;
 import it.telecomitalia.ah.hac.IEndPoint;
 import it.telecomitalia.ah.hac.IEndPointRequestContext;
@@ -40,6 +44,9 @@ import it.telecomitalia.ah.hac.IServiceCluster;
 import it.telecomitalia.ah.hac.ISubscriptionParameters;
 import it.telecomitalia.ah.hac.ServiceClusterException;
 import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
+import it.telecomitalia.ah.hac.lib.ext.IConnectionAdminService;
+
+import java.util.Hashtable;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
@@ -49,7 +56,7 @@ import org.osgi.service.log.LogService;
  * 
  */
 public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
-		implements DoorSensor, WindowSensor
+		implements DoorSensor, WindowSensor, IApplicationService
 {
 
 	// the class logger
@@ -62,6 +69,12 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	// the reporting time to set
 	private int reportingTimeSeconds;
 
+	// the set of exported service clusters
+	private IServiceCluster[] exportedClusters;
+
+	// the connection admin service
+	private IConnectionAdminService connectionAdmin;
+
 	/**
 	 * Creates an instance of device-specific driver associated to a given
 	 * device and using a given network driver
@@ -73,10 +86,11 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	 * @param context
 	 *            the {@link BundleContext} of the driver bundle managing this
 	 *            instance.
+	 * @param connectionAdmin
 	 */
 	public ZigBeeDoorWindowSensorDriverInstance(ZigBeeNetwork network,
 			ControllableDevice device, BundleContext context,
-			int reportingTimeSeconds)
+			int reportingTimeSeconds, IConnectionAdminService connectionAdmin)
 	{
 		super(network, device);
 
@@ -86,6 +100,29 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		// initialize the reporting time
 		this.reportingTimeSeconds = reportingTimeSeconds;
 
+		// store the reference to the connection admin service
+		this.connectionAdmin = connectionAdmin;
+
+		// create the exported clusters
+		try
+		{
+			this.exportedClusters = new IServiceCluster[] { (IServiceCluster) new DoorWindowsSensorOnOffClientCluster(
+					this) };
+		}
+		catch (ApplianceException e)
+		{
+			// TODO Auto-generated catch block
+			this.logger.log(LogService.LOG_WARNING,
+					"Unable to publish the OnOffClient cluster...");
+		}
+
+		// register a new IAppliance service
+		Hashtable<String, Object> registrationProps = new Hashtable<String, Object>();
+		registrationProps.put("ah.application.name", "ah.app.doorsensor_"
+				+ device.getDeviceId());
+		context.registerService(IApplicationService.class.getName(), this,
+				registrationProps);
+		
 		// read the initial state of devices
 		this.initializeStates();
 	}
@@ -96,8 +133,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		// debug
 		this.logger.log(
 				LogService.LOG_DEBUG,
-				ZigBeeDoorWindowSensorDriver.logId + "Device "
-						+ this.device.getDeviceId() + " is now "
+				"Device " + this.device.getDeviceId() + " is now "
 						+ newState.getCurrentStateValue()[0].getValue());
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
@@ -131,10 +167,9 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			if (this.iasZoneServerCluster != null)
 				break;
 		}
-
+		
 		// debug
-		this.logger.log(LogService.LOG_DEBUG, ZigBeeDoorWindowSensorDriver.logId
-				+ "Subscribed to all clusters");
+		this.logger.log(LogService.LOG_DEBUG, "Subscribed to all clusters");
 	}
 
 	@Override
@@ -225,20 +260,17 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 				// subscribed attributes
 				ISubscriptionParameters acceptedParams = cluster
 						.getAttributeSubscription(
-								IASZoneServer.ATTR_ZoneStatus_NAME,
-								reqContext);
+								IASZoneServer.ATTR_ZoneStatus_NAME, reqContext);
 
 				// perform attribute subscription and get the accepted
 				// subscription parameters for active energy
 				if (acceptedParams == null)
 				{
-					acceptedParams = cluster
-							.setAttributeSubscription(
-									IASZoneServer.ATTR_ZoneStatus_NAME,
-									new SubscriptionParameters(
-											this.reportingTimeSeconds,
-											this.reportingTimeSeconds, 0),
-									reqContext);
+					acceptedParams = cluster.setAttributeSubscription(
+							IASZoneServer.ATTR_ZoneStatus_NAME,
+							new SubscriptionParameters(
+									this.reportingTimeSeconds,
+									this.reportingTimeSeconds, 0), reqContext);
 
 					// debug
 					this.debugSubscription(acceptedParams);
@@ -249,8 +281,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			{
 				this.logger
 						.log(LogService.LOG_ERROR,
-								ZigBeeDoorWindowSensorDriver.logId
-										+ "Error (ApplianceException) while sending setting subscription to the ZigBee appliance with serial: "
+								"Error (ApplianceException) while sending setting subscription to the ZigBee appliance with serial: "
 										+ this.theManagedAppliance.getSerial(),
 								e);
 			}
@@ -258,8 +289,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			{
 				this.logger
 						.log(LogService.LOG_ERROR,
-								ZigBeeDoorWindowSensorDriver.logId
-										+ "Error (ServiceClusterException) while setting subscription to the ZigBee appliance with serial: "
+								"Error (ServiceClusterException) while setting subscription to the ZigBee appliance with serial: "
 										+ this.theManagedAppliance.getSerial(),
 								e);
 			}
@@ -276,17 +306,13 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		if (this.logger != null)
 		{
 			if (acceptedParams != null)
-				this.logger.log(
-						LogService.LOG_DEBUG,
-						ZigBeeDoorWindowSensorDriver.logId + "Subscription result:"
-								+ acceptedParams.getMinReportingInterval()
-								+ ","
-								+ acceptedParams.getMaxReportingInterval()
-								+ "," + acceptedParams.getReportableChange());
+				this.logger.log(LogService.LOG_DEBUG, "Subscription result:"
+						+ acceptedParams.getMinReportingInterval() + ","
+						+ acceptedParams.getMaxReportingInterval() + ","
+						+ acceptedParams.getReportableChange());
 			else
 				this.logger.log(LogService.LOG_DEBUG,
-						ZigBeeDoorWindowSensorDriver.logId
-								+ "Subscripion not accepted");
+						"Subscripion not accepted");
 		}
 	}
 
@@ -305,8 +331,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 
 		logger.log(
 				LogService.LOG_DEBUG,
-				ZigBeeDoorWindowSensorDriver.logId
-						+ "Device "
+				"Device "
 						+ device.getDeviceId()
 						+ " is now "
 						+ ((OpenCloseState) openState).getCurrentStateValue()[0]
@@ -325,8 +350,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 
 		logger.log(
 				LogService.LOG_DEBUG,
-				ZigBeeDoorWindowSensorDriver.logId
-						+ "Device "
+				"Device "
 						+ device.getDeviceId()
 						+ " is now "
 						+ ((OpenCloseState) closeState).getCurrentStateValue()[0]
@@ -334,6 +358,44 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 
 		((DoorSensor) device).notifyClose();
 
+	}
+
+	@Override
+	public IServiceCluster[] getServiceClusters()
+	{
+		return this.exportedClusters;
+	}
+
+	@Override
+	public void notifyApplianceAdded(IApplicationEndPoint endPoint,
+			IAppliance appliance)
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void notifyApplianceRemoved(IAppliance appliance)
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void notifyApplianceAvailabilityUpdated(IAppliance appliance)
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	public IConnectionAdminService getConnectionAdmin()
+	{
+		return connectionAdmin;
+	}
+
+	public void setConnectionAdmin(IConnectionAdminService connectionAdmin)
+	{
+		this.connectionAdmin = connectionAdmin;
 	}
 
 }
