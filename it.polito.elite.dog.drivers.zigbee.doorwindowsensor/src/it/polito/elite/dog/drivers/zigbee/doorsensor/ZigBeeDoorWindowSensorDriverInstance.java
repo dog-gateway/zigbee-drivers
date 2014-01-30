@@ -1,5 +1,5 @@
 /*
- * Dog 2.0 - ZigBee EnergyAndPowerMeter Driver
+ * Dog 2.0 - ZigBee DoorSensor Driver
  * 
  * 
  * Copyright 2013 Dario Bonino 
@@ -28,7 +28,9 @@ import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.CloseStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.cluster.DoorWindowsSensorOnOffClientCluster;
+import it.polito.elite.dog.drivers.zigbee.doorsensor.appliance.ZigBeeDoorWindowSensorAppliance;
+import it.polito.elite.dog.drivers.zigbee.doorsensor.cluster.DoorWindowsSensorOnOffServerCluster;
+import it.polito.elite.dog.drivers.zigbee.doorsensor.endpoint.ZigBeeDoorWindowSensorEndpoint;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
@@ -40,6 +42,7 @@ import it.telecomitalia.ah.hac.IApplicationService;
 import it.telecomitalia.ah.hac.IAttributeValue;
 import it.telecomitalia.ah.hac.IEndPoint;
 import it.telecomitalia.ah.hac.IEndPointRequestContext;
+import it.telecomitalia.ah.hac.IManagedAppliance;
 import it.telecomitalia.ah.hac.IServiceCluster;
 import it.telecomitalia.ah.hac.ISubscriptionParameters;
 import it.telecomitalia.ah.hac.ServiceClusterException;
@@ -75,6 +78,9 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	// the connection admin service
 	private IConnectionAdminService connectionAdmin;
 
+	// the published appliance
+	private ZigBeeDoorWindowSensorAppliance publishedAppliance;
+
 	/**
 	 * Creates an instance of device-specific driver associated to a given
 	 * device and using a given network driver
@@ -103,26 +109,44 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		// store the reference to the connection admin service
 		this.connectionAdmin = connectionAdmin;
 
-		// create the exported clusters
+		// publish the virtual appliance associated to this instance to check
+		// the actual status of the connected device.
 		try
 		{
-			this.exportedClusters = new IServiceCluster[] { (IServiceCluster) new DoorWindowsSensorOnOffClientCluster(
-					this) };
+			// prepare the appliance configuration parameters
+			Hashtable<String, Object> config = new Hashtable<String, Object>();
+			config.put(IAppliance.APPLIANCE_NAME_PROPERTY,
+					"ah.app.doorsensordriver");
+			
+			// create the appliance to publish for capturing the door sensor notifications (ONOffClient)
+			this.publishedAppliance = new ZigBeeDoorWindowSensorAppliance(
+					"ah.app.doorsensor_" + device.getDeviceId(), config);
+			// create the needed  endpoint
+			ZigBeeDoorWindowSensorEndpoint endpoint = new ZigBeeDoorWindowSensorEndpoint(
+					"ah.app.doorsensor", this.publishedAppliance);
+			// create the OnOffServer cluster which will handle OnOffClient requests
+			DoorWindowsSensorOnOffServerCluster cluster = new DoorWindowsSensorOnOffServerCluster(
+					this, this.publishedAppliance);
+			
+			//add the cluster to the endpoint
+			endpoint.addServiceCluster(cluster);
+			
+			//add the endpoint to the appliance
+			this.publishedAppliance.addEndPoint(endpoint);
+
+			//flag the appliance as available
+			this.publishedAppliance.setAvailability(true);
+			
+			// register the appliance in the framework
+			context.registerService(IManagedAppliance.class.getName(),
+					this.publishedAppliance, null);
 		}
 		catch (ApplianceException e)
 		{
 			// TODO Auto-generated catch block
-			this.logger.log(LogService.LOG_WARNING,
-					"Unable to publish the OnOffClient cluster...");
+			e.printStackTrace();
 		}
 
-		// register a new IAppliance service
-		Hashtable<String, Object> registrationProps = new Hashtable<String, Object>();
-		registrationProps.put("ah.application.name", "ah.app.doorsensor_"
-				+ device.getDeviceId());
-		context.registerService(IApplicationService.class.getName(), this,
-				registrationProps);
-		
 		// read the initial state of devices
 		this.initializeStates();
 	}
@@ -167,7 +191,21 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			if (this.iasZoneServerCluster != null)
 				break;
 		}
-		
+
+		// register binding between the appliance that the driver publishes and
+		// the appliance representing the door sensor device.
+		try
+		{
+			this.connectionAdmin
+					.createConnection(this.publishedAppliance.getPid(),
+							this.theManagedAppliance.getAppliance().getPid());
+		}
+		catch (ApplianceException e)
+		{
+			this.logger.log(LogService.LOG_WARNING,
+					"Unable to bind the driver and the door sensor appliances");
+		}
+
 		// debug
 		this.logger.log(LogService.LOG_DEBUG, "Subscribed to all clusters");
 	}
