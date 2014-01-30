@@ -1,5 +1,5 @@
 /*
- * Dog 2.0 - ZigBee DoorSensor Driver
+ * Dog 2.0 - ZigBee EnergyAndPowerMeter Driver
  * 
  * 
  * Copyright 2013 Dario Bonino 
@@ -16,29 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-package it.polito.elite.dog.drivers.zigbee.doorsensor;
+package it.polito.elite.dog.drivers.zigbee.movementsensor;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.DoorSensor;
 import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
-import it.polito.elite.dog.core.library.model.devicecategory.WindowSensor;
-import it.polito.elite.dog.core.library.model.state.OpenCloseState;
+import it.polito.elite.dog.core.library.model.devicecategory.MovementSensor;
+import it.polito.elite.dog.core.library.model.state.MovementState;
 import it.polito.elite.dog.core.library.model.state.State;
-import it.polito.elite.dog.core.library.model.statevalue.CloseStateValue;
-import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
+import it.polito.elite.dog.core.library.model.statevalue.MovingStateValue;
+import it.polito.elite.dog.core.library.model.statevalue.NotMovingStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.appliance.ZigBeeDoorWindowSensorAppliance;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.cluster.ZigBeeDoorWindowsSensorOnOffServerCluster;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.endpoint.ZigBeeDoorWindowSensorEndpoint;
+import it.polito.elite.dog.drivers.zigbee.movementsensor.appliance.ZigBeeMovementSensorAppliance;
+import it.polito.elite.dog.drivers.zigbee.movementsensor.cluster.ZigBeeMovementSensorOnOffServerCluster;
+import it.polito.elite.dog.drivers.zigbee.movementsensor.endpoint.ZigBeeMovementSensorEndpoint;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.security.IASZoneServer;
+import it.telecomitalia.ah.cluster.zigbee.measurement.OccupancySensingServer;
 import it.telecomitalia.ah.hac.ApplianceException;
 import it.telecomitalia.ah.hac.IAppliance;
-import it.telecomitalia.ah.hac.IApplicationEndPoint;
-import it.telecomitalia.ah.hac.IApplicationService;
 import it.telecomitalia.ah.hac.IAttributeValue;
 import it.telecomitalia.ah.hac.IEndPoint;
 import it.telecomitalia.ah.hac.IEndPointRequestContext;
@@ -51,6 +48,8 @@ import it.telecomitalia.ah.hac.lib.ext.IConnectionAdminService;
 
 import java.util.Hashtable;
 
+import javax.measure.unit.Unit;
+
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
@@ -58,8 +57,8 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
-		implements DoorSensor, WindowSensor, IApplicationService
+public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
+		implements MovementSensor
 {
 
 	// the class logger
@@ -67,19 +66,16 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 
 	// the illuminance measurement cluster associated to the appliance managed
 	// by this driver
-	private IASZoneServer iasZoneServerCluster;
+	private OccupancySensingServer occupancySensingClusterServer;
 
 	// the reporting time to set
 	private int reportingTimeSeconds;
-
-	// the set of exported service clusters
-	private IServiceCluster[] exportedClusters;
 
 	// the connection admin service
 	private IConnectionAdminService connectionAdmin;
 
 	// the published appliance
-	private ZigBeeDoorWindowSensorAppliance publishedAppliance;
+	private ZigBeeMovementSensorAppliance publishedAppliance;
 
 	/**
 	 * Creates an instance of device-specific driver associated to a given
@@ -92,9 +88,8 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	 * @param context
 	 *            the {@link BundleContext} of the driver bundle managing this
 	 *            instance.
-	 * @param connectionAdmin
 	 */
-	public ZigBeeDoorWindowSensorDriverInstance(ZigBeeNetwork network,
+	public ZigBeeMovementSensorDriverInstance(ZigBeeNetwork network,
 			ControllableDevice device, BundleContext context,
 			int reportingTimeSeconds, IConnectionAdminService connectionAdmin)
 	{
@@ -117,26 +112,28 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			Hashtable<String, Object> config = new Hashtable<String, Object>();
 			config.put(IAppliance.APPLIANCE_NAME_PROPERTY,
 					"ah.app.doorsensordriver");
-			
-			// create the appliance to publish for capturing the door sensor notifications (ONOffClient)
-			this.publishedAppliance = new ZigBeeDoorWindowSensorAppliance(
+
+			// create the appliance to publish for capturing the door sensor
+			// notifications (ONOffClient)
+			this.publishedAppliance = new ZigBeeMovementSensorAppliance(
 					"ah.app.doorsensor_" + device.getDeviceId(), config);
-			// create the needed  endpoint
-			ZigBeeDoorWindowSensorEndpoint endpoint = new ZigBeeDoorWindowSensorEndpoint(
+			// create the needed endpoint
+			ZigBeeMovementSensorEndpoint endpoint = new ZigBeeMovementSensorEndpoint(
 					"ah.app.doorsensor", this.publishedAppliance);
-			// create the OnOffServer cluster which will handle OnOffClient requests
-			ZigBeeDoorWindowsSensorOnOffServerCluster cluster = new ZigBeeDoorWindowsSensorOnOffServerCluster(
+			// create the OnOffServer cluster which will handle OnOffClient
+			// requests
+			ZigBeeMovementSensorOnOffServerCluster cluster = new ZigBeeMovementSensorOnOffServerCluster(
 					this, this.publishedAppliance);
-			
-			//add the cluster to the endpoint
+
+			// add the cluster to the endpoint
 			endpoint.addServiceCluster(cluster);
-			
-			//add the endpoint to the appliance
+
+			// add the endpoint to the appliance
 			this.publishedAppliance.addEndPoint(endpoint);
 
-			//flag the appliance as available
+			// flag the appliance as available
 			this.publishedAppliance.setAvailability(true);
-			
+
 			// register the appliance in the framework
 			context.registerService(IManagedAppliance.class.getName(),
 					this.publishedAppliance, null);
@@ -177,7 +174,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		super.setIAppliance(appliance);
 
 		// reset the clusters
-		this.iasZoneServerCluster = null;
+		this.occupancySensingClusterServer = null;
 
 		// extract the OnOffCluster, if available
 		IEndPoint endpoints[] = appliance.getAppliance().getEndPoints();
@@ -186,9 +183,9 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		{
 			// try to attach the SimpleMeteringCluster associated to the
 			// appliance
-			this.attachIASZoneCluster(endpoint);
+			this.attachOccupancySensingCluster(endpoint);
 
-			if (this.iasZoneServerCluster != null)
+			if (this.occupancySensingClusterServer != null)
 				break;
 		}
 
@@ -229,21 +226,21 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			String attributeName, IAttributeValue attributeValue)
 	{
 		// handle SimpleMeteringCluster only...
-		if (clusterName.equals(IASZoneServer.class.getName()))
+		if (clusterName.equals(OccupancySensingServer.class.getName()))
 		{
 			// handle metering notifications
-			if (attributeName.equals(IASZoneServer.ATTR_ZoneStatus_NAME))
+			if (attributeName
+					.equals(OccupancySensingServer.ATTR_Occupancy_NAME))
 			{
-				// active power notification
 
 				// conversion as dictated by the metering cluster specification
 				int valueAsInt = (Integer) attributeValue.getValue();
 
-				// notify the new state
-				if (valueAsInt == 1)
-					this.notifyOpen();
+				// notify the new value
+				if (valueAsInt > 0)
+					this.notifyDetectedMovement();
 				else
-					this.notifyClose();
+					this.notifyCeasedMovement();
 
 			}
 		}
@@ -255,9 +252,12 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	private void initializeStates()
 	{
 
+		// create the var and va units
+		Unit.ONE.alternate("%");
+
 		// initialize the state
-		this.currentState.setState(OpenCloseState.class.getSimpleName(),
-				new OpenCloseState(new CloseStateValue()));
+		this.currentState.setState(MovementState.class.getSimpleName(),
+				new MovementState(new NotMovingStateValue()));
 
 	}
 
@@ -272,19 +272,19 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	 *            the endpoint for which trying to attach the notifications
 	 * @return true if successful, false otherwise
 	 */
-	private boolean attachIASZoneCluster(IEndPoint endpoint)
+	private boolean attachOccupancySensingCluster(IEndPoint endpoint)
 	{
 		// the success flag
 		boolean done = false;
 
 		// get the OnOff cluster
 		IServiceCluster cluster = endpoint
-				.getServiceCluster(IASZoneServer.class.getName());
+				.getServiceCluster(OccupancySensingServer.class.getName());
 
 		if (cluster != null)
 		{
 			// store the cluster
-			this.iasZoneServerCluster = (IASZoneServer) cluster;
+			this.occupancySensingClusterServer = (OccupancySensingServer) cluster;
 
 			// set the attribute subscription
 			try
@@ -298,14 +298,15 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 				// subscribed attributes
 				ISubscriptionParameters acceptedParams = cluster
 						.getAttributeSubscription(
-								IASZoneServer.ATTR_ZoneStatus_NAME, reqContext);
+								OccupancySensingServer.ATTR_Occupancy_NAME,
+								reqContext);
 
 				// perform attribute subscription and get the accepted
 				// subscription parameters for active energy
 				if (acceptedParams == null)
 				{
 					acceptedParams = cluster.setAttributeSubscription(
-							IASZoneServer.ATTR_ZoneStatus_NAME,
+							OccupancySensingServer.ATTR_Occupancy_NAME,
 							new SubscriptionParameters(
 									this.reportingTimeSeconds,
 									this.reportingTimeSeconds, 0), reqContext);
@@ -361,68 +362,40 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	}
 
 	@Override
-	public void notifyOpen()
+	public void notifyCeasedMovement()
 	{
 		// update the state
-		OpenCloseState openState = new OpenCloseState(new OpenStateValue());
-		currentState.setState(OpenCloseState.class.getSimpleName(), openState);
+		MovementState movState = new MovementState(new NotMovingStateValue());
+		currentState.setState(MovementState.class.getSimpleName(), movState);
 
 		logger.log(
 				LogService.LOG_DEBUG,
 				"Device "
 						+ device.getDeviceId()
-						+ " is now "
-						+ ((OpenCloseState) openState).getCurrentStateValue()[0]
+						+ " value is now "
+						+ ((MovementState) movState).getCurrentStateValue()[0]
 								.getValue());
 
-		((DoorSensor) device).notifyOpen();
+		((MovementSensor) device).notifyCeasedMovement();
 
 	}
 
 	@Override
-	public void notifyClose()
+	public void notifyDetectedMovement()
 	{
 		// update the state
-		OpenCloseState closeState = new OpenCloseState(new CloseStateValue());
-		currentState.setState(OpenCloseState.class.getSimpleName(), closeState);
+		MovementState movState = new MovementState(new MovingStateValue());
+		currentState.setState(MovementState.class.getSimpleName(), movState);
 
 		logger.log(
 				LogService.LOG_DEBUG,
 				"Device "
 						+ device.getDeviceId()
-						+ " is now "
-						+ ((OpenCloseState) closeState).getCurrentStateValue()[0]
+						+ " value is now "
+						+ ((MovementState) movState).getCurrentStateValue()[0]
 								.getValue());
 
-		((DoorSensor) device).notifyClose();
-
-	}
-
-	@Override
-	public IServiceCluster[] getServiceClusters()
-	{
-		return this.exportedClusters;
-	}
-
-	@Override
-	public void notifyApplianceAdded(IApplicationEndPoint endPoint,
-			IAppliance appliance)
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void notifyApplianceRemoved(IAppliance appliance)
-	{
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void notifyApplianceAvailabilityUpdated(IAppliance appliance)
-	{
-		// TODO Auto-generated method stub
+		((MovementSensor) device).notifyDetectedMovement();
 
 	}
 

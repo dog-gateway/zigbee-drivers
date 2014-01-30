@@ -32,7 +32,7 @@ import it.telecomitalia.ah.hac.lib.ServiceCluster;
  * @author bonino
  * 
  */
-public class DoorWindowsSensorOnOffServerCluster extends ServiceCluster
+public class ZigBeeDoorWindowsSensorOnOffServerCluster extends ServiceCluster
 		implements OnOffServer
 {
 	// The instance of ZigBeeDoorWindowSensorDriverInstance that will handle
@@ -43,7 +43,7 @@ public class DoorWindowsSensorOnOffServerCluster extends ServiceCluster
 	 * @throws ApplianceException
 	 * 
 	 */
-	public DoorWindowsSensorOnOffServerCluster(
+	public ZigBeeDoorWindowsSensorOnOffServerCluster(
 			ZigBeeDoorWindowSensorDriverInstance instance, Appliance appliance)
 			throws ApplianceException
 	{
