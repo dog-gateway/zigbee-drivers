@@ -121,14 +121,14 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 	public void notifyStateChanged(State newState)
 	{
 		// debug
-		this.logger.log(
+		/*this.logger.log(
 				LogService.LOG_DEBUG,
 				ZigBeeEnergyAndPowerMeterDriver.logId
 						+ "Device "
 						+ this.device.getDeviceId()
 						+ " is now "
 						+ ((OnOffState) newState).getCurrentStateValue()[0]
-								.getValue());
+								.getValue());*/
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -316,6 +316,8 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 								+ SI.KILO(SI.WATT.times(NonSI.HOUR)).toString()));
 
 			}
+			
+			this.notifyStateChanged(null);
 
 		}
 

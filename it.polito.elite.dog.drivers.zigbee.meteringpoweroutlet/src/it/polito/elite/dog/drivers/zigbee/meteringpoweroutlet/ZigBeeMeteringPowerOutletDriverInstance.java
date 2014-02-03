@@ -247,14 +247,15 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 	public void notifyStateChanged(State newState)
 	{
 		// debug
-		this.logger.log(
+		/*this.logger.log(
 				LogService.LOG_DEBUG,
 				ZigBeeMeteringPowerOutletDriver.logId
 						+ "Device "
 						+ this.device.getDeviceId()
 						+ " is now "
-						+ ((OnOffState) newState).getCurrentStateValue()[0]
+						+ newState.getCurrentStateValue()[0]
 								.getValue());
+		*/
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -306,6 +307,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 		((MeteringPowerOutlet) this.device)
 				.notifyNewActivePowerValue(powerValue);
 
+
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
 				ZigBeeMeteringPowerOutletDriver.logId
@@ -353,6 +355,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 
 		// notify the new measure
 		((MeteringPowerOutlet) this.device).notifyNewActiveEnergyValue(value);
+
 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
@@ -508,6 +511,9 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 			}
 
 		}
+		
+		
+		this.notifyStateChanged(null);
 
 	}
 
