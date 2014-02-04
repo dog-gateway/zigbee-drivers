@@ -1,5 +1,5 @@
 /*
- * Dog 2.0 - ZigBee DoorSensor Driver
+ * Dog 2.0 - ZigBee Door and Window Sensor Driver
  * 
  * 
  * Copyright 2013 Dario Bonino 
@@ -16,11 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-package it.polito.elite.dog.drivers.zigbee.doorsensor.cluster;
+package it.polito.elite.dog.drivers.zigbee.doorwindowsensor.cluster;
 
 import it.polito.elite.dog.core.library.model.state.OpenCloseState;
 import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.ZigBeeDoorWindowSensorDriverInstance;
+import it.polito.elite.dog.drivers.zigbee.doorwindowsensor.ZigBeeDoorWindowSensorDriverInstance;
 import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
 import it.telecomitalia.ah.hac.ApplianceException;
 import it.telecomitalia.ah.hac.IEndPointRequestContext;
@@ -29,6 +29,11 @@ import it.telecomitalia.ah.hac.lib.Appliance;
 import it.telecomitalia.ah.hac.lib.ServiceCluster;
 
 /**
+ * Implements an {@link OnOffServer} cluster connected to a
+ * {@link ZigBeeDoorWindowSensorDriverInstance}. This allows capturing requests
+ * of physical clients and to boind them to open/close primitives offered by the
+ * driver instance.
+ * 
  * @author bonino
  * 
  */
@@ -40,6 +45,7 @@ public class ZigBeeDoorWindowsSensorOnOffServerCluster extends ServiceCluster
 	private ZigBeeDoorWindowSensorDriverInstance theInstance;
 
 	/**
+	 * Constructor, initializes inner data structures
 	 * @throws ApplianceException
 	 * 
 	 */

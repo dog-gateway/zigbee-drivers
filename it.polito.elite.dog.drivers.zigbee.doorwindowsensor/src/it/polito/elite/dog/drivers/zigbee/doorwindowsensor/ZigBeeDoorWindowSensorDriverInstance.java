@@ -1,8 +1,8 @@
 /*
- * Dog 2.0 - ZigBee DoorSensor Driver
+ * Dog 2.0 - ZigBee Door and Window Sensor Driver Instance
  * 
  * 
- * Copyright 2013 Dario Bonino 
+ * Copyright 2014 Dario Bonino 
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-package it.polito.elite.dog.drivers.zigbee.doorsensor;
+package it.polito.elite.dog.drivers.zigbee.doorwindowsensor;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
@@ -28,9 +28,9 @@ import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.CloseStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.appliance.ZigBeeDoorWindowSensorAppliance;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.cluster.ZigBeeDoorWindowsSensorOnOffServerCluster;
-import it.polito.elite.dog.drivers.zigbee.doorsensor.endpoint.ZigBeeDoorWindowSensorEndpoint;
+import it.polito.elite.dog.drivers.zigbee.doorwindowsensor.appliance.ZigBeeDoorWindowSensorAppliance;
+import it.polito.elite.dog.drivers.zigbee.doorwindowsensor.cluster.ZigBeeDoorWindowsSensorOnOffServerCluster;
+import it.polito.elite.dog.drivers.zigbee.doorwindowsensor.endpoint.ZigBeeDoorWindowSensorEndpoint;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
@@ -55,6 +55,14 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
 /**
+ * <p>
+ * A driver instance managing a real device offering {@link DoorSensor} or
+ * {@link WindowSensor} capabilities. It registers a dedicated virtual appliance
+ * that exposes an OnOff server cluster on the ZigBee network. Such a cluster is
+ * programmatically bound to the OnOff client cluster exposed by the device in
+ * order to capture door/window events.
+ * </p>
+ * 
  * @author bonino
  * 
  */
@@ -65,7 +73,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	// the class logger
 	private LogHelper logger;
 
-	// the illuminance measurement cluster associated to the appliance managed
+	// the IASZone cluster associated to the appliance managed
 	// by this driver
 	private IASZoneServer iasZoneServerCluster;
 
@@ -117,26 +125,28 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 			Hashtable<String, Object> config = new Hashtable<String, Object>();
 			config.put(IAppliance.APPLIANCE_NAME_PROPERTY,
 					"ah.app.doorsensordriver");
-			
-			// create the appliance to publish for capturing the door sensor notifications (ONOffClient)
+
+			// create the appliance to publish for capturing the door sensor
+			// notifications (OnOffClient)
 			this.publishedAppliance = new ZigBeeDoorWindowSensorAppliance(
 					"ah.app.doorsensor_" + device.getDeviceId(), config);
-			// create the needed  endpoint
+			// create the needed endpoint
 			ZigBeeDoorWindowSensorEndpoint endpoint = new ZigBeeDoorWindowSensorEndpoint(
 					"ah.app.doorsensor", this.publishedAppliance);
-			// create the OnOffServer cluster which will handle OnOffClient requests
+			// create the OnOffServer cluster which will handle OnOffClient
+			// requests
 			ZigBeeDoorWindowsSensorOnOffServerCluster cluster = new ZigBeeDoorWindowsSensorOnOffServerCluster(
 					this, this.publishedAppliance);
-			
-			//add the cluster to the endpoint
+
+			// add the cluster to the endpoint
 			endpoint.addServiceCluster(cluster);
-			
-			//add the endpoint to the appliance
+
+			// add the endpoint to the appliance
 			this.publishedAppliance.addEndPoint(endpoint);
 
-			//flag the appliance as available
+			// flag the appliance as available
 			this.publishedAppliance.setAvailability(true);
-			
+
 			// register the appliance in the framework
 			context.registerService(IManagedAppliance.class.getName(),
 					this.publishedAppliance, null);
@@ -338,6 +348,11 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		return done;
 	}
 
+	/**
+	 * Provides debug feedback about parameter subscription results.
+	 * 
+	 * @param acceptedParams
+	 */
 	private void debugSubscription(ISubscriptionParameters acceptedParams)
 	{
 		// debug
@@ -426,11 +441,22 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 
 	}
 
+	/**
+	 * Provides a reference to the {@link IConnectionAdminService} currently
+	 * used by this instance
+	 * 
+	 * @return
+	 */
 	public IConnectionAdminService getConnectionAdmin()
 	{
 		return connectionAdmin;
 	}
 
+	/**
+	 * Sets the {@link IConnectionAdminService} to be used by this instance.
+	 * 
+	 * @param connectionAdmin
+	 */
 	public void setConnectionAdmin(IConnectionAdminService connectionAdmin)
 	{
 		this.connectionAdmin = connectionAdmin;

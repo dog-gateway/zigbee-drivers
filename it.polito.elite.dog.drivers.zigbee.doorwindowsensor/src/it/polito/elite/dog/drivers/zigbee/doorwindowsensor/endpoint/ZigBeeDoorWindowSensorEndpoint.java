@@ -16,38 +16,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-package it.polito.elite.dog.drivers.zigbee.doorsensor.appliance;
-
-import java.util.Dictionary;
+package it.polito.elite.dog.drivers.zigbee.doorwindowsensor.endpoint;
 
 import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.IApplianceDescriptor;
 import it.telecomitalia.ah.hac.lib.Appliance;
-import it.telecomitalia.ah.hac.lib.ApplianceDescriptor;
+import it.telecomitalia.ah.hac.lib.EndPoint;
 
 /**
+ * A custom {@link EndPoint} retaining a pointer to the appliance to which
+ * belongs.
+ * 
  * @author bonino
- *
+ * 
  */
-public class ZigBeeDoorWindowSensorAppliance extends Appliance
+public class ZigBeeDoorWindowSensorEndpoint extends EndPoint
 {
 
-	private ApplianceDescriptor descriptor;
-	
-	public ZigBeeDoorWindowSensorAppliance(String pid, Dictionary<?,?> config)
+	/**
+	 * Class constructor, takes the appliance to which the cluster belongs as
+	 * parameter.
+	 * 
+	 * @param type
+	 * @throws ApplianceException
+	 */
+	public ZigBeeDoorWindowSensorEndpoint(String type, Appliance appliance)
 			throws ApplianceException
 	{
-		super(pid, config);
-
-		this.descriptor = new ApplianceDescriptor("it.polito.elite.drivers.zigbee", pid);
+		super(type);
+		this.appliance = appliance;
 	}
-
-	@Override
-	public IApplianceDescriptor getDescriptor()
-	{
-		return this.descriptor;
-	}
-	
-	
 
 }
