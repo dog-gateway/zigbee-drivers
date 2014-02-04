@@ -136,7 +136,7 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 			this.network.get().removeFromNetworkDriver(instance);
 
 		// un-register
-		this.unRegisterLightSensorDriver();
+		this.unRegisterZigBeeDeviceDriver();
 
 		// null inner variables
 		this.context = null;
@@ -164,7 +164,7 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 		if (this.network.compareAndSet(network, null))
 		{
 			// unregister the services
-			this.unRegisterLightSensorDriver();
+			this.unRegisterZigBeeDeviceDriver();
 
 			// log network river removal
 			if (this.logger != null)
@@ -192,7 +192,7 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 		if (this.gateway.compareAndSet(gateway, null))
 		{
 			// unregister the services
-			this.unRegisterLightSensorDriver();
+			this.unRegisterZigBeeDeviceDriver();
 			// log network driver removal
 			if (this.logger != null)
 				this.logger.log(LogService.LOG_DEBUG, this.logId
@@ -213,15 +213,15 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 					.getProperty(DeviceCostants.DEVICE_CATEGORY);
 
 			// get the given device manufacturer
-			String manifacturer = (String) reference
+			String manufacturer = (String) reference
 					.getProperty(DeviceCostants.MANUFACTURER);
 
 			// compute the matching score between the given device and this
 			// driver
 			if (deviceCategory != null)
 			{
-				if (manifacturer != null
-						&& (manifacturer.equals(ZigBeeInfo.MANUFACTURER))
+				if (manufacturer != null
+						&& (manufacturer.equals(ZigBeeInfo.MANUFACTURER))
 						&& (this.deviceCategories.contains(deviceCategory)))
 				{
 					matchValue = Controllable.MATCH_MANUFACTURER
@@ -314,7 +314,7 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 	/**
 	 * Unregisters this driver from the OSGi framework...
 	 */
-	private void unRegisterLightSensorDriver()
+	private void unRegisterZigBeeDeviceDriver()
 	{
 		// TODO DETACH allocated Drivers
 		if (this.regDriver != null)
