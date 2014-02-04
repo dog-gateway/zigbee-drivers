@@ -1,5 +1,5 @@
 /*
- * Dog 2.0 - ZigBee EnergyAndPowerMeter Driver
+ * Dog 2.0 - ZigBee Light Sensor Driver
  * 
  * 
  * Copyright 2013 Dario Bonino 
@@ -99,12 +99,6 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 	@Override
 	public void notifyStateChanged(State newState)
 	{
-		// debug
-		this.logger.log(
-				LogService.LOG_DEBUG,
-				ZigBeeLightSensorDriver.logId + "Device "
-						+ this.device.getDeviceId() + " is now "
-						+ newState.getCurrentStateValue()[0].getValue());
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -178,6 +172,9 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 				// notify the new value
 				this.notifyNewLuminosityValue(DecimalMeasure.valueOf(valueAsLux
 						+ " " + SI.LUX.toString()));
+				
+				//notify the state change
+				this.notifyStateChanged(null);
 
 			}
 		}

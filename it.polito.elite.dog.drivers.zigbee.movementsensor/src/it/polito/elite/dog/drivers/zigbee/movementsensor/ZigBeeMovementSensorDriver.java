@@ -1,5 +1,5 @@
 /*
- * Dog 2.0 - ZigBee LightSensor Driver
+ * Dog 2.0 - ZigBee Movement Driver
  * 
  * Copyright 2013 Dario Bonino 
  * 
@@ -31,6 +31,27 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
 /**
+ * <p>
+ * This class implements the Movement sensor driver for the ZigBee network. It
+ * takes care of matching and attaching devices of type {@link MovementSensor}
+ * and } and of delegating their management to suitable driver instances (
+ * {@link ZigBeeMovementSensorDriverInstance}).
+ * </p>
+ * 
+ * <p>
+ * Movement sensors, in ZigBee, typically expose an OccupancySensingServer
+ * server cluster, whose attribute Occupancy signals whether the given sensor is
+ * detecting/not detecting a movement, and an OnOffClient cluster used to
+ * control bound devices exposing a suitable OnOff server cluster.
+ * </p>
+ * 
+ * <p>
+ * Each driver instance registers a dedicated virtual appliance that exposes an
+ * OnOff server cluster on the ZigBee network. Such a cluster is
+ * programmatically bound to the OnOff client cluster exposed by the device in
+ * order to capture door/window events.
+ * </p>
+ * 
  * @author bonino
  * 
  */
@@ -39,6 +60,9 @@ public class ZigBeeMovementSensorDriver extends ZigBeeDeviceDriver
 {
 	private AtomicReference<IConnectionAdminService> connectionAdmin;
 
+	/**
+	 * Initializes the inner data structures
+	 */
 	public ZigBeeMovementSensorDriver()
 	{
 		super();
@@ -67,6 +91,13 @@ public class ZigBeeMovementSensorDriver extends ZigBeeDeviceDriver
 	}
 
 	// additional bindings
+	
+	/**
+	 * Bind the {@link IConnectionAdminService} service available in the
+	 * framework. Updates all references in already existing driver instances.
+	 * 
+	 * @param connectionAdmin
+	 */
 	public void addedConnectionAdminService(
 			IConnectionAdminService connectionAdmin)
 	{
@@ -87,6 +118,12 @@ public class ZigBeeMovementSensorDriver extends ZigBeeDeviceDriver
 
 	}
 
+	/**
+	 * Unbind the {@link IConnectionAdminService} service when it is no more available in the
+	 * framework. Updates all references in already existing driver instances.
+	 * 
+	 * @param connectionAdmin
+	 */
 	public void removedConnectionAdminService(IConnectionAdminService gateway)
 	{
 		// null the network freeing the old reference for gc

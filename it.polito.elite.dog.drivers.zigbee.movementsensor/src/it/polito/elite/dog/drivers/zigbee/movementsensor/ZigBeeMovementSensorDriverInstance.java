@@ -1,6 +1,5 @@
 /*
- * Dog 2.0 - ZigBee EnergyAndPowerMeter Driver
- * 
+ * Dog 2.0 - ZigBee Movement Driver
  * 
  * Copyright 2013 Dario Bonino 
  * 
@@ -151,11 +150,6 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 	@Override
 	public void notifyStateChanged(State newState)
 	{
-		// debug
-		this.logger.log(
-				LogService.LOG_DEBUG,
-				"Device " + this.device.getDeviceId() + " is now "
-						+ newState.getCurrentStateValue()[0].getValue());
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -241,6 +235,9 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 					this.notifyDetectedMovement();
 				else
 					this.notifyCeasedMovement();
+				
+				//notify the state change
+				this.notifyStateChanged(null);
 
 			}
 		}

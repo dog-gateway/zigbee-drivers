@@ -1,6 +1,5 @@
 /*
- * Dog 2.0 - ZigBee EnergyAndPowerMeter Driver
- * 
+ * Dog 2.0 - ZigBee TemperatureAndHumiditySensor Driver
  * 
  * Copyright 2013 Dario Bonino 
  * 
@@ -51,6 +50,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
 /**
+ * Actual driver for ZigBee Temperature and Humidity sensors.
  * @author bonino
  * 
  */
@@ -107,12 +107,6 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 	@Override
 	public void notifyStateChanged(State newState)
 	{
-		// debug
-		this.logger.log(
-				LogService.LOG_DEBUG,
-				ZigBeeTemperatureAndHumiditySensorDriver.logId + "Device "
-						+ this.device.getDeviceId() + " is now "
-						+ newState.getCurrentStateValue()[0].getValue());
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -191,6 +185,9 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 				// notify the new value
 				this.notifyNewTemperatureValue(DecimalMeasure
 						.valueOf(valueAsCelsius + " " + SI.CELSIUS.toString()));
+				
+				//notify the state change
+				this.notifyStateChanged(null);
 
 			}
 		}

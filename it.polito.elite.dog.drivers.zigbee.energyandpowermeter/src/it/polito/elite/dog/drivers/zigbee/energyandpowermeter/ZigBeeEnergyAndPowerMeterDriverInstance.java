@@ -175,8 +175,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
-				ZigBeeEnergyAndPowerMeterDriver.logId
-						+ "Notifying power value: " + powerValue);
+				"Notifying power value: " + powerValue);
 
 	}
 
@@ -199,8 +198,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
-				ZigBeeEnergyAndPowerMeterDriver.logId
-						+ "Notifying reactive energy value: " + value);
+				"Notifying reactive energy value: " + value);
 
 	}
 
@@ -223,8 +221,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
-				ZigBeeEnergyAndPowerMeterDriver.logId
-						+ "Notifying active energy value: " + value);
+				"Notifying active energy value: " + value);
 
 	}
 
@@ -259,8 +256,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
-				ZigBeeEnergyAndPowerMeterDriver.logId
-						+ "Subscribed to all clusters");
+				 "Subscribed to all clusters");
 	}
 
 	@Override
@@ -518,7 +514,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 				// log the multiplier and divisor
 				this.logger.log(LogService.LOG_DEBUG,
-						ZigBeeEnergyAndPowerMeterDriver.logId + "Divisor["
+						"Divisor["
 								+ this.divisor + "]<=" + divisor
 								+ " Multiplier[" + this.multiplier + "]<="
 								+ multiplier);
@@ -542,8 +538,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 			{
 				this.logger
 						.log(LogService.LOG_ERROR,
-								ZigBeeEnergyAndPowerMeterDriver.logId
-										+ "Error (ApplianceException) while sending setting subscription to the ZigBee appliance with serial: "
+								"Error (ApplianceException) while sending setting subscription to the ZigBee appliance with serial: "
 										+ this.theManagedAppliance.getSerial(),
 								e);
 			}
@@ -551,8 +546,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 			{
 				this.logger
 						.log(LogService.LOG_ERROR,
-								ZigBeeEnergyAndPowerMeterDriver.logId
-										+ "Error (ServiceClusterException) while setting subscription to the ZigBee appliance with serial: "
+								"Error (ServiceClusterException) while setting subscription to the ZigBee appliance with serial: "
 										+ this.theManagedAppliance.getSerial(),
 								e);
 			}
@@ -571,16 +565,14 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 			if (acceptedParams != null)
 				this.logger.log(
 						LogService.LOG_DEBUG,
-						ZigBeeEnergyAndPowerMeterDriver.logId
-								+ "Subscription result:"
+						 "Subscription result:"
 								+ acceptedParams.getMinReportingInterval()
 								+ ","
 								+ acceptedParams.getMaxReportingInterval()
 								+ "," + acceptedParams.getReportableChange());
 			else
 				this.logger.log(LogService.LOG_DEBUG,
-						ZigBeeEnergyAndPowerMeterDriver.logId
-								+ "Subscripion not accepted");
+						"Subscripion not accepted");
 		}
 	}
 

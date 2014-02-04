@@ -27,33 +27,48 @@ import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
 import org.osgi.framework.BundleContext;
 
 /**
+ * <p>
+ * This class implements the EnergyAndPowerMeter driver for the ZigBee
+ * network. It takes care of matching and attaching devices of type
+ * {@link EnergyAndPowerMeter} and of delegating their
+ * management to suitable driver instances (
+ * {@link ZigBeeEnergyAndPowerMeterDriverInstance}).
+ * </p>
  * @author bonino
  * 
  */
 
 public class ZigBeeEnergyAndPowerMeterDriver extends ZigBeeDeviceDriver
 {
-protected static final String logId = "[ZigBeeEnergyAndPowerMeterDriver]: ";
-	
+
+	/**
+	 * Empty constructor, initializes inner data structures, only.
+	 */
 	public ZigBeeEnergyAndPowerMeterDriver()
 	{
 		super();
-		
-		//setup supported clusters
-		this.serverClusters.add(SimpleMeteringServer.class.getName().replace("Server",""));
 
-		
-		//setup categories
+		// setup supported clusters
+		this.serverClusters.add(SimpleMeteringServer.class.getName().replace(
+				"Server", ""));
+
+		// setup categories
 		this.deviceCategories.add(EnergyAndPowerMeter.class.getName());
 		this.deviceMainClass = EnergyAndPowerMeter.class.getSimpleName();
-		
+
 	}
+
+	/**
+	 * Creates an instance of {@link ZigBeeEnergyAndPowerMeterDriverInstance} that
+	 * will manage a specific device under attachment.
+	 */
 	@Override
 	public ZigBeeDriverInstance createNewZigBeeDriverInstance(
 			ZigBeeNetwork zigBeeNetwork, ControllableDevice device,
 			BundleContext context, int reportingTimeSeconds)
 	{
 		// TODO Auto-generated method stub
-		return new ZigBeeEnergyAndPowerMeterDriverInstance(zigBeeNetwork, device, context, reportingTimeSeconds);
+		return new ZigBeeEnergyAndPowerMeterDriverInstance(zigBeeNetwork,
+				device, context, reportingTimeSeconds);
 	}
 }

@@ -27,32 +27,45 @@ import it.telecomitalia.ah.cluster.zigbee.measurement.IlluminanceMeasurementServ
 import org.osgi.framework.BundleContext;
 
 /**
+ * <p>
+ * This class implements the LightSensor driver for the ZigBee network. It takes
+ * care of matching and attaching devices of type {@link LightSensor} and of
+ * delegating their management to suitable driver instances (
+ * {@link ZigBeeLightSensorDriverInstance}).
+ * </p>
+ * 
  * @author bonino
  * 
  */
 public class ZigBeeLightSensorDriver extends ZigBeeDeviceDriver
-		
+
 {
-protected static final String logId = "[ZigBeeLightSensorDriver]: ";
-	
+	protected static final String logId = "[ZigBeeLightSensorDriver]: ";
+
+	/**
+	 * Empty constructor, initializes inner data structures.
+	 */
 	public ZigBeeLightSensorDriver()
 	{
 		super();
-		
-		//setup supported clusters
-		this.serverClusters.add(IlluminanceMeasurementServer.class.getName().replace("Server",""));
-		
-		//setup categories
+
+		// setup supported clusters
+		this.serverClusters.add(IlluminanceMeasurementServer.class.getName()
+				.replace("Server", ""));
+
+		// setup categories
 		this.deviceCategories.add(LightSensor.class.getName());
 		this.deviceMainClass = LightSensor.class.getSimpleName();
-		
+
 	}
+
 	@Override
 	public ZigBeeDriverInstance createNewZigBeeDriverInstance(
 			ZigBeeNetwork zigBeeNetwork, ControllableDevice device,
 			BundleContext context, int reportingTimeSeconds)
 	{
 		// TODO Auto-generated method stub
-		return new ZigBeeLightSensorDriverInstance(zigBeeNetwork, device, context, reportingTimeSeconds);
+		return new ZigBeeLightSensorDriverInstance(zigBeeNetwork, device,
+				context, reportingTimeSeconds);
 	}
 }

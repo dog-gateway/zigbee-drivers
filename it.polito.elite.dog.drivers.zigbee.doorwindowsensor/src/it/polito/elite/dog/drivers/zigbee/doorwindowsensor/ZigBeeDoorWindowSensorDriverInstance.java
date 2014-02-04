@@ -164,11 +164,6 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	@Override
 	public void notifyStateChanged(State newState)
 	{
-		// debug
-		this.logger.log(
-				LogService.LOG_DEBUG,
-				"Device " + this.device.getDeviceId() + " is now "
-						+ newState.getCurrentStateValue()[0].getValue());
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -254,6 +249,9 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 					this.notifyOpen();
 				else
 					this.notifyClose();
+				
+				//notify the state change
+				this.notifyStateChanged(null);
 
 			}
 		}

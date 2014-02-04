@@ -1,5 +1,20 @@
-/**
+/*
+ * Dog 2.0 - ZigBee MeterBridge
  * 
+ * 
+ * Copyright 2013 Dario Bonino 
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License
  */
 package it.polito.elite.dog.drivers.zigbee.meterbridge;
 
@@ -39,6 +54,10 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 /**
+ * This class creates virtual appliances for bridging sensors belonging to other
+ * networks to a ZigBee network. Currently, supports only single phase metering devices are supported, i.e.,
+ * {@link MeteringPowerOutlet} and {@link EnergyAndPowerMeter}.
+ * 
  * @author bonino
  * 
  */
@@ -79,7 +98,7 @@ public class MeterBridge implements ManagedService,
 	private Set<String> supportedCategories;
 
 	/**
-	 * 
+	 * Initializes the inner datas structures
 	 */
 	public MeterBridge()
 	{
@@ -154,6 +173,10 @@ public class MeterBridge implements ManagedService,
 
 	}
 
+	/**
+	 * Handle binding of network driver (mainly used to set a dependency on the existence of a ZigBee network).
+	 * @param network
+	 */
 	public void addedNetworkDriver(ZigBeeNetwork network)
 	{
 		// log network river addition
@@ -165,6 +188,10 @@ public class MeterBridge implements ManagedService,
 
 	}
 
+	/**
+	 * Handle removal of network driver.
+	 * @param network
+	 */
 	public void removedNetworkDriver(ZigBeeNetwork network)
 	{
 		// null the network freeing the old reference for gc
@@ -179,6 +206,10 @@ public class MeterBridge implements ManagedService,
 		}
 	}
 
+	/**
+	 * Handle binding of {@link MonitorAdmin} for handling meter state bridging
+	 * @param monitorAdmin
+	 */
 	public void addedMonitorAdmin(MonitorAdmin monitorAdmin)
 	{
 		// log network river addition
@@ -190,6 +221,10 @@ public class MeterBridge implements ManagedService,
 
 	}
 
+	/**
+	 * Handle un-binding of {@link MonitorAdmin}
+	 * @param monitorAdmin
+	 */
 	public void removedMonitorAdmin(MonitorAdmin monitorAdmin)
 	{
 		// null the network freeing the old reference for gc
@@ -233,6 +268,11 @@ public class MeterBridge implements ManagedService,
 
 	}
 
+	/**
+	 * Creates a virtual brdige appliance for the given device service having the give device id.
+	 * @param deviceService The device service to bridge.
+	 * @param deviceId The device unique id (URI).
+	 */
 	private void bridgeDevice(ServiceReference<?> deviceService, String deviceId)
 	{
 

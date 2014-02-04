@@ -29,12 +29,14 @@ import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
 import org.osgi.framework.BundleContext;
 
 /**
+ * <p>
+ * This class implements the MeteringPowerOutlet driver for the ZigBee network. It takes
+ * care of matching and attaching devices of type {@link MeteringPowerOutlet} and of
+ * delegating their management to suitable driver instances (
+ * {@link ZigBeeMeteringPowerOutletDriverInstance}).
+ * </p>
  * @author bonino
  * 
- * this.driverInfo.setMainDeviceClass(MeteringPowerOutlet.class
-				.getSimpleName());
-		this.driverInfo.addServerClusters(OnOffServer.class.getName().replaceAll("Server", ""),
-				SimpleMeteringServer.class.getName().replaceAll("Server", ""));
  */
 public class ZigBeeMeteringPowerOutletDriver extends ZigBeeDeviceDriver
 {

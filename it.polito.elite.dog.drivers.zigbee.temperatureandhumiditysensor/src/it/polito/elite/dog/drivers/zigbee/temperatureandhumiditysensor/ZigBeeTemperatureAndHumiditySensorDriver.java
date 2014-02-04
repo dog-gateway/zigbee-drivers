@@ -28,6 +28,12 @@ import it.telecomitalia.ah.cluster.zigbee.measurement.TemperatureMeasurementServ
 import org.osgi.framework.BundleContext;
 
 /**
+ * <p>
+ * This class implements the Temperature and Humidity sensor driver for the ZigBee network. It takes
+ * care of matching and attaching devices of type {@link TemperatureAndHumiditySensor} and of
+ * delegating their management to suitable driver instances (
+ * {@link ZigBeeTemperatureAndHumiditySensorInstance}).
+ * </p>
  * @author bonino
  * 
  * 

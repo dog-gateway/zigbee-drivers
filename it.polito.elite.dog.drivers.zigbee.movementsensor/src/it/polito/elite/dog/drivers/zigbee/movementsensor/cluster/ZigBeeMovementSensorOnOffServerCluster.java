@@ -1,6 +1,5 @@
 /*
- * Dog 2.0 - ZigBee DoorSensor Driver
- * 
+ * Dog 2.0 - ZigBee Movement Driver
  * 
  * Copyright 2013 Dario Bonino 
  * 

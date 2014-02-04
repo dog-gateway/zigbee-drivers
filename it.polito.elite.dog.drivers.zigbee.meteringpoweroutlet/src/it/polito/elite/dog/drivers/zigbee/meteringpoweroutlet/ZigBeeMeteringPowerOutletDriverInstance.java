@@ -246,16 +246,6 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 	@Override
 	public void notifyStateChanged(State newState)
 	{
-		// debug
-		/*this.logger.log(
-				LogService.LOG_DEBUG,
-				ZigBeeMeteringPowerOutletDriver.logId
-						+ "Device "
-						+ this.device.getDeviceId()
-						+ " is now "
-						+ newState.getCurrentStateValue()[0]
-								.getValue());
-		*/
 		((ElectricalSystem) this.device).notifyStateChanged(newState);
 
 	}
@@ -639,11 +629,8 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 			{
 				newState = new OnOffState(new OffStateValue());
 			}
-			// ... then set the new state for the device and throw a state
-			// changed notification
+			// ... then set the new state for the device 
 			this.currentState.setState(newState.getStateName(), newState);
-
-			this.notifyStateChanged(newState);
 		}
 
 	}
