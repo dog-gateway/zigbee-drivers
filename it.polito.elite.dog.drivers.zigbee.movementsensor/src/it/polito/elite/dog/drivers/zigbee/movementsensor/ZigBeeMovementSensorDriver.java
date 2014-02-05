@@ -72,7 +72,7 @@ public class ZigBeeMovementSensorDriver extends ZigBeeDeviceDriver
 				"Server", ""));
 
 		// setup categories
-		this.deviceCategories.add(MovementSensor.class.getName());
+		this.driverInstanceClass = ZigBeeMovementSensorDriverInstance.class;
 		this.deviceMainClass = MovementSensor.class.getSimpleName();
 
 		// set up atomic reference

@@ -51,7 +51,7 @@ protected static final String logId = "[ZigBeeDoorSensorDriver]: ";
 		this.serverClusters.add(RelativeHumidityMeasurementServer.class.getName().replace("Server",""));
 		
 		//setup categories
-		this.deviceCategories.add(TemperatureAndHumiditySensor.class.getName());
+		this.driverInstanceClass = ZigBeeTemperatureAndHumiditySensorDriverInstance.class;
 		this.deviceMainClass = TemperatureAndHumiditySensor.class.getSimpleName();
 		
 	}

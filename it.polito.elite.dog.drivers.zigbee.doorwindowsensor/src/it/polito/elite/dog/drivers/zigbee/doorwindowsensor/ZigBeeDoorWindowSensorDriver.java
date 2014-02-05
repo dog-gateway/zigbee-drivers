@@ -78,7 +78,7 @@ public class ZigBeeDoorWindowSensorDriver extends ZigBeeDeviceDriver
 				""));
 
 		// setup categories
-		this.deviceCategories.add(DoorSensor.class.getName());
+		this.driverInstanceClass = ZigBeeDoorWindowSensorDriverInstance.class;
 		this.deviceMainClass = DoorSensor.class.getSimpleName();
 
 		// set up atomic reference

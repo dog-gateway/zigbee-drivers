@@ -51,7 +51,7 @@ protected static final String logId = "[ZigBeeMeteringPowerOutletDriver]: ";
 		this.serverClusters.add(SimpleMeteringServer.class.getName().replaceAll("Server", ""));
 		
 		//setup categories
-		this.deviceCategories.add(MeteringPowerOutlet.class.getName());
+		this.driverInstanceClass = ZigBeeMeteringPowerOutletDriverInstance.class;
 		this.deviceMainClass = MeteringPowerOutlet.class.getSimpleName();
 		
 	}

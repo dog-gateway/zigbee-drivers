@@ -49,11 +49,7 @@ protected static final String logId = "[ZigBeeOnOffDeviceDriver]: ";
 		this.serverClusters.add(OnOffServer.class.getName().replace("Server",""));
 		
 		//setup categories
-		this.deviceCategories.add(Lamp.class.getName());
-		this.deviceCategories.add(SimpleLamp.class.getName());
-		this.deviceCategories.add(Buzzer.class.getName());
-		this.deviceCategories.add(MainsPowerOutlet.class.getName());
-		this.deviceCategories.add(OnOffOutput.class.getName());
+		this.driverInstanceClass = ZigBeeOnOffDeviceDriverInstance.class;
 		
 		this.deviceMainClass = OnOffOutput.class.getSimpleName();
 		

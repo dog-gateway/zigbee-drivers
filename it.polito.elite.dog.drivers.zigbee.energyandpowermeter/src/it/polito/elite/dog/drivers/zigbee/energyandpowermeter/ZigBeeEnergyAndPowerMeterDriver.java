@@ -53,7 +53,7 @@ public class ZigBeeEnergyAndPowerMeterDriver extends ZigBeeDeviceDriver
 				"Server", ""));
 
 		// setup categories
-		this.deviceCategories.add(EnergyAndPowerMeter.class.getName());
+		this.driverInstanceClass = ZigBeeEnergyAndPowerMeterDriverInstance.class;
 		this.deviceMainClass = EnergyAndPowerMeter.class.getSimpleName();
 
 	}

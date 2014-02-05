@@ -75,6 +75,10 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 
 	protected Set<String> deviceCategories;
 
+	// the driver instance class from which extracting the supported device
+	// categories
+	protected Class<?> driverInstanceClass;
+
 	/**
 				 * 
 				 */
@@ -120,6 +124,9 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 		this.driverInfo.addClientClusters(this.clientClusters);
 
 		this.logger.log(LogService.LOG_DEBUG, this.logId + "Activated...");
+		
+		//fill device categories
+		this.properFillDeviceCategories(this.driverInstanceClass);
 	}
 
 	/**
@@ -267,6 +274,23 @@ public abstract class ZigBeeDeviceDriver extends ZigBeeDriver implements
 	public abstract ZigBeeDriverInstance createNewZigBeeDriverInstance(
 			ZigBeeNetwork zigBeeNetwork, ControllableDevice device,
 			BundleContext context, int reportingTimeSeconds);
+
+	/**
+	 * Fill a set with all the device categories whose devices can match with
+	 * this driver. Automatically retrieve the device categories list by reading
+	 * the implemented interfaces of its DeviceDriverInstance class bundle.
+	 */
+	public void properFillDeviceCategories(Class<?> cls)
+	{
+		if (cls != null)
+		{
+			for (Class<?> devCat : cls.getInterfaces())
+			{
+				this.deviceCategories.add(devCat.getName());
+			}
+		}
+
+	}
 
 	@Override
 	public void updated(Dictionary<String, ?> configParams)

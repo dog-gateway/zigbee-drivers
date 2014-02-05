@@ -54,7 +54,7 @@ public class ZigBeeLightSensorDriver extends ZigBeeDeviceDriver
 				.replace("Server", ""));
 
 		// setup categories
-		this.deviceCategories.add(LightSensor.class.getName());
+		this.driverInstanceClass = ZigBeeLightSensorDriverInstance.class;
 		this.deviceMainClass = LightSensor.class.getSimpleName();
 
 	}
