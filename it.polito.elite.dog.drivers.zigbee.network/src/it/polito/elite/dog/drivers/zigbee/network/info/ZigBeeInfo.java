@@ -18,26 +18,18 @@
  */
 package it.polito.elite.dog.drivers.zigbee.network.info;
 
+import it.polito.elite.dog.core.library.model.ConfigurationConstants;
+
 /**
  * @author bonino
  * 
  */
-public class ZigBeeInfo
+public class ZigBeeInfo extends ConfigurationConstants
 {
 	/**
 	 * the manufacturer identifier (Modbus)
 	 */
 	public static final String MANUFACTURER = "ZigBee";
-	
-	/**
-	 * the command name to which a specific configuration refers
-	 */
-	public static final String COMMAND_NAME = "realCommandName";
-	
-	/**
-	 * the notification name to which a specific configuration refers
-	 */
-	public static final String NOTIFICATION_NAME = "notificationName";
 	
 	/**
 	 * The appliance serial number

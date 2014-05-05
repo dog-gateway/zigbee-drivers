@@ -18,6 +18,7 @@
  */
 package it.polito.elite.dog.drivers.zigbee.energyandpowermeter;
 
+import it.polito.elite.dog.core.library.model.CNParameters;
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
 import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
@@ -37,7 +38,6 @@ import it.polito.elite.dog.core.library.model.statevalue.ReactiveEnergyStateValu
 import it.polito.elite.dog.core.library.model.statevalue.StateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
-import it.polito.elite.dog.drivers.zigbee.network.info.CmdNotificationInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
@@ -344,7 +344,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 		for (String notificationName : this.notifications.keySet())
 		{
 			// get the notification description
-			CmdNotificationInfo notificationInfo = this.notifications
+			CNParameters notificationInfo = this.notifications
 					.get(notificationName);
 
 			if (notificationInfo

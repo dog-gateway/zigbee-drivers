@@ -18,10 +18,10 @@
  */
 package it.polito.elite.dog.drivers.zigbee.network;
 
+import it.polito.elite.dog.core.library.model.CNParameters;
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
 import it.polito.elite.dog.core.library.util.ElementDescription;
-import it.polito.elite.dog.drivers.zigbee.network.info.CmdNotificationInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
@@ -53,10 +53,10 @@ public abstract class ZigBeeDriverInstance
 	protected DeviceStatus currentState;
 	
 	// the set of notifications associated to the driver
-	protected HashMap<String, CmdNotificationInfo> notifications;
+	protected HashMap<String, CNParameters> notifications;
 	
 	// the set of commands associated to the driver
-	protected HashMap<String, CmdNotificationInfo> commands;
+	protected HashMap<String, CNParameters> commands;
 	
 	public ZigBeeDriverInstance(ZigBeeNetwork network, ControllableDevice device)
 	{
@@ -67,8 +67,8 @@ public abstract class ZigBeeDriverInstance
 		this.device = device;
 		
 		// initialize datastructures
-		this.notifications = new HashMap<String, CmdNotificationInfo>();
-		this.commands = new HashMap<String, CmdNotificationInfo>();
+		this.notifications = new HashMap<String, CNParameters>();
+		this.commands = new HashMap<String, CNParameters>();
 		
 		// fill the data structures depending on the specific device
 		// configuration parameters
@@ -173,7 +173,7 @@ public abstract class ZigBeeDriverInstance
 				
 				if (commandName != null)
 					// store the parameters associated to the command
-					this.commands.put(commandName, new CmdNotificationInfo(commandName, params));
+					this.commands.put(commandName, new CNParameters(commandName, params));
 			}
 			
 		}
@@ -191,7 +191,7 @@ public abstract class ZigBeeDriverInstance
 				
 				if (notificationName != null)
 					// store the parameters associated to the command
-					this.notifications.put(notificationName, new CmdNotificationInfo(notificationName, params));
+					this.notifications.put(notificationName, new CNParameters(notificationName, params));
 			}
 			
 		}

@@ -19,11 +19,7 @@
 package it.polito.elite.dog.drivers.zigbee.onoffdevice;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
-import it.polito.elite.dog.core.library.model.devicecategory.Buzzer;
-import it.polito.elite.dog.core.library.model.devicecategory.Lamp;
-import it.polito.elite.dog.core.library.model.devicecategory.MainsPowerOutlet;
 import it.polito.elite.dog.core.library.model.devicecategory.OnOffOutput;
-import it.polito.elite.dog.core.library.model.devicecategory.SimpleLamp;
 import it.polito.elite.dog.drivers.zigbee.device.ZigBeeDeviceDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
