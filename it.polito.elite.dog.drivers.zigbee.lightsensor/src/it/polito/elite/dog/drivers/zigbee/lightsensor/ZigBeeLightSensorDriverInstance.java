@@ -20,10 +20,9 @@ package it.polito.elite.dog.drivers.zigbee.lightsensor;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.LightSensor;
 import it.polito.elite.dog.core.library.model.state.LightIntensityState;
-import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.LevelStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
@@ -38,6 +37,8 @@ import it.telecomitalia.ah.hac.IServiceCluster;
 import it.telecomitalia.ah.hac.ISubscriptionParameters;
 import it.telecomitalia.ah.hac.ServiceClusterException;
 import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
+
+import java.util.HashSet;
 
 import javax.measure.DecimalMeasure;
 import javax.measure.Measure;
@@ -68,6 +69,9 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 	// the reporting time to set
 	private int reportingTimeSeconds;
 
+	// the group set
+	private HashSet<Integer> groups;
+
 	/**
 	 * Creates an instance of device-specific driver associated to a given
 	 * device and using a given network driver
@@ -92,15 +96,11 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 		// initialize the reporting time
 		this.reportingTimeSeconds = reportingTimeSeconds;
 
+		// build inner data structures
+		this.groups = new HashSet<Integer>();
+
 		// read the initial state of devices
 		this.initializeStates();
-	}
-
-	@Override
-	public void notifyStateChanged(State newState)
-	{
-		((ElectricalSystem) this.device).notifyStateChanged(newState);
-
 	}
 
 	/*
@@ -167,14 +167,14 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 				// conversion as dictated by the metering cluster specification
 				int valueAsInt = (Integer) attributeValue.getValue();
 				double valueAsLux = Math.pow(10,
-						(((double) valueAsInt) / (double) this.divisor))- 1;
+						(((double) valueAsInt) / (double) this.divisor)) - 1;
 
 				// notify the new value
 				this.notifyNewLuminosityValue(DecimalMeasure.valueOf(valueAsLux
 						+ " " + SI.LUX.toString()));
-				
-				//notify the state change
-				this.notifyStateChanged(null);
+
+				// notify the state change
+				this.updateStatus();
 
 			}
 		}
@@ -298,15 +298,22 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 	}
 
 	@Override
-	public void deleteGroup(String groupID)
+	public void deleteGroup(Integer groupID)
 	{
-		// intentionally left empty
+		// remove the given group id
+		this.groups.remove(groupID);
+		
+		//notify
+		this.notifyLeftGroup(groupID);
 	}
 
 	@Override
-	public void storeGroup(String groupID)
+	public void storeGroup(Integer groupID)
 	{
-		// intentionally left empty
+		// Store the given group id
+		this.groups.add(groupID);
+		
+		this.notifyJoinedGroup(groupID);
 	}
 
 	@Override
@@ -351,6 +358,28 @@ public class ZigBeeLightSensorDriverInstance extends ZigBeeDriverInstance
 
 		// notify the new measure
 		((LightSensor) device).notifyNewLuminosityValue(illuminanceValue);
+	}
+	
+	@Override
+	public void notifyJoinedGroup(Integer groupNumber)
+	{
+		// send the joined group notification
+		((LightSensor)this.device).notifyJoinedGroup(groupNumber);
+
+	}
+
+	@Override
+	public void notifyLeftGroup(Integer groupNumber)
+	{
+		// send the left group notification
+		((LightSensor)this.device).notifyLeftGroup(groupNumber);
+
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable)this.device).updateStatus();
 	}
 
 }

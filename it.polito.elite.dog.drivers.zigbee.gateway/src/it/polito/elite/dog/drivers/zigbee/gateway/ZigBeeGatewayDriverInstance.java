@@ -23,7 +23,7 @@ import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceDescriptor;
 import it.polito.elite.dog.core.library.model.DeviceDescriptorFactory;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.HomeGateway;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.ZigBeeGateway;
 import it.polito.elite.dog.core.library.model.state.NetworkManagementState;
 import it.polito.elite.dog.core.library.model.state.State;
@@ -144,8 +144,13 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		{
 			this.networkManager.openNetwork();
 			if (this.networkManager.isNetworkOpen())
-				this.notifyStateChanged(new NetworkManagementState(
+			{
+				this.updateNetworkManagementState(new NetworkManagementState(
 						new OpenStateValue()));
+				
+				//notify the network state change
+				this.notifyOpen();
+			}
 		}
 		catch (Exception e)
 		{
@@ -162,8 +167,13 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		{
 			this.networkManager.closeNetwork();
 			if (!this.networkManager.isNetworkOpen())
-				this.notifyStateChanged(new NetworkManagementState(
+			{
+				this.updateNetworkManagementState(new NetworkManagementState(
 						new CloseStateValue()));
+				
+				//notify the network state change
+				this.notifyClose();
+			}
 		}
 		catch (Exception e)
 		{
@@ -186,8 +196,8 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		this.appliancesProxy.deleteAppliance(deviceId);
 	}
 
-	@Override
-	public void notifyStateChanged(State newState)
+
+	private void updateNetworkManagementState(State newState)
 	{
 		// update the current state
 		this.currentState.setState(
@@ -196,10 +206,8 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 		// debug
 		logger.log(LogService.LOG_DEBUG, "Device " + device.getDeviceId()
 				+ " is now " + (newState).getCurrentStateValue()[0].getValue());
-
-		// call the super method
-		((HomeGateway) device).notifyStateChanged(newState);
-
+		
+		this.updateStatus();
 	}
 
 	@Override
@@ -392,5 +400,24 @@ public class ZigBeeGatewayDriverInstance extends ZigBeeDriverInstance implements
 
 		// return
 		return descriptor;
+	}
+
+	@Override
+	public void notifyClose()
+	{
+		((ZigBeeGateway)this.device).notifyClose();
+	}
+
+	@Override
+	public void notifyOpen()
+	{
+		((ZigBeeGateway)this.device).notifyOpen();		
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable)this.device).updateStatus();
+		
 	}
 }

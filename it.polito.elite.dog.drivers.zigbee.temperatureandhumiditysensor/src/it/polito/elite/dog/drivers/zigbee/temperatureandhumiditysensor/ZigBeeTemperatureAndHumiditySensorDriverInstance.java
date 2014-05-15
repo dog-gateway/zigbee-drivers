@@ -19,10 +19,9 @@ package it.polito.elite.dog.drivers.zigbee.temperatureandhumiditysensor;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.TemperatureAndHumiditySensor;
 import it.polito.elite.dog.core.library.model.state.HumidityMeasurementState;
-import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.state.TemperatureState;
 import it.polito.elite.dog.core.library.model.statevalue.HumidityStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.TemperatureStateValue;
@@ -40,6 +39,8 @@ import it.telecomitalia.ah.hac.IServiceCluster;
 import it.telecomitalia.ah.hac.ISubscriptionParameters;
 import it.telecomitalia.ah.hac.ServiceClusterException;
 import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
+
+import java.util.HashSet;
 
 import javax.measure.DecimalMeasure;
 import javax.measure.Measure;
@@ -75,6 +76,9 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 
 	// the reporting time to set
 	private int reportingTimeSeconds;
+	
+	// the group set
+		private HashSet<Integer> groups;
 
 	/**
 	 * Creates an instance of device-specific driver associated to a given
@@ -99,16 +103,12 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 
 		// initialize the reporting time
 		this.reportingTimeSeconds = reportingTimeSeconds;
+		
+		// build inner data structures
+				this.groups = new HashSet<Integer>();
 
 		// read the initial state of devices
 		this.initializeStates();
-	}
-
-	@Override
-	public void notifyStateChanged(State newState)
-	{
-		((ElectricalSystem) this.device).notifyStateChanged(newState);
-
 	}
 
 	/*
@@ -187,7 +187,7 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 						.valueOf(valueAsCelsius + " " + SI.CELSIUS.toString()));
 				
 				//notify the state change
-				this.notifyStateChanged(null);
+				this.updateStatus();
 
 			}
 		}
@@ -420,15 +420,22 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 
 
 	@Override
-	public void deleteGroup(String groupID)
+	public void deleteGroup(Integer groupID)
 	{
-		// intentionally left empty
+		// remove the given group id
+		this.groups.remove(groupID);
+		
+		//notify
+		this.notifyLeftGroup(groupID);
 	}
-	
+
 	@Override
-	public void storeGroup(String groupID)
+	public void storeGroup(Integer groupID)
 	{
-		// intentionally left empty
+		// Store the given group id
+		this.groups.add(groupID);
+		
+		this.notifyJoinedGroup(groupID);
 	}
 	
 	@Override
@@ -504,6 +511,28 @@ public class ZigBeeTemperatureAndHumiditySensorDriverInstance extends
 		
 		// notify the new measure
 		((TemperatureAndHumiditySensor) device).notifyChangedRelativeHumidity(relativeHumidity);
+	}
+	
+	@Override
+	public void notifyJoinedGroup(Integer groupNumber)
+	{
+		// send the joined group notification
+		((TemperatureAndHumiditySensor)this.device).notifyJoinedGroup(groupNumber);
+
+	}
+
+	@Override
+	public void notifyLeftGroup(Integer groupNumber)
+	{
+		// send the left group notification
+		((TemperatureAndHumiditySensor)this.device).notifyLeftGroup(groupNumber);
+
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable)this.device).updateStatus();
 	}
 
 }

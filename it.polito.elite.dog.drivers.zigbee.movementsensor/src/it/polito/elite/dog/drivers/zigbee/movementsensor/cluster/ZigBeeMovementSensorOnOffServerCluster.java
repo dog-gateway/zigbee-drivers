@@ -93,7 +93,7 @@ public class ZigBeeMovementSensorOnOffServerCluster extends ServiceCluster
 			throws ApplianceException, ServiceClusterException
 	{
 		// handle on
-		this.theInstance.notifyDetectedMovement();
+		this.theInstance.notifyStartedMovement();
 
 	}
 
@@ -106,7 +106,7 @@ public class ZigBeeMovementSensorOnOffServerCluster extends ServiceCluster
 				.getCurrentStateValue()[0] instanceof MovingStateValue)
 			this.theInstance.notifyCeasedMovement();
 		else
-			this.theInstance.notifyDetectedMovement();
+			this.theInstance.notifyStartedMovement();
 
 	}
 

@@ -21,8 +21,9 @@ package it.polito.elite.dog.drivers.zigbee.meteringpoweroutlet;
 import it.polito.elite.dog.core.library.model.CNParameters;
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.MeteringPowerOutlet;
+import it.polito.elite.dog.core.library.model.devicecategory.OnOffOutput;
 import it.polito.elite.dog.core.library.model.notification.SinglePhaseActiveEnergyMeasurementNotification;
 import it.polito.elite.dog.core.library.model.notification.SinglePhaseActivePowerMeasurementNotification;
 import it.polito.elite.dog.core.library.model.notification.SinglePhaseReactiveEnergyMeasurementNotification;
@@ -55,6 +56,8 @@ import it.telecomitalia.ah.hac.ISubscriptionParameters;
 import it.telecomitalia.ah.hac.ServiceClusterException;
 import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
 
+import java.util.HashSet;
+
 import javax.measure.DecimalMeasure;
 import javax.measure.Measure;
 import javax.measure.quantity.Power;
@@ -73,8 +76,8 @@ import org.osgi.service.log.LogService;
  * @author bonino
  * 
  */
-public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstance
-		implements MeteringPowerOutlet
+public class ZigBeeMeteringPowerOutletDriverInstance extends
+		ZigBeeDriverInstance implements MeteringPowerOutlet
 {
 	// the class logger
 	private LogHelper logger;
@@ -91,6 +94,12 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 
 	// the reporting time to set
 	private int reportingTimeSeconds;
+
+	// the group set
+	private HashSet<Integer> groups;
+
+	// the scene set
+	private HashSet<Integer> scenes;
 
 	/**
 	 * Creates an instance of device-specific driver associated to a given
@@ -116,6 +125,10 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 		// initialize the reporting time
 		this.reportingTimeSeconds = reportingTimeSeconds;
 
+		// build inner data structures
+		this.groups = new HashSet<Integer>();
+		this.scenes = new HashSet<Integer>();
+
 		// read the initial state of devices
 		this.initializeStates();
 	}
@@ -123,28 +136,71 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 	@Override
 	public void storeScene(Integer sceneNumber)
 	{
-		// intentionally left empty
+		// Store the given scene id
+		this.scenes.add(sceneNumber);
 
+		// notify
+		this.notifyStoredScene(sceneNumber);
 	}
 
 	@Override
 	public void deleteScene(Integer sceneNumber)
 	{
-		// intentionally left empty
+		// Remove the given scene id
+		this.scenes.remove(sceneNumber);
+
+		// notify
+		this.notifyDeletedScene(sceneNumber);
+	}
+
+	@Override
+	public void deleteGroup(Integer groupID)
+	{
+		// remove the given group id
+		this.groups.remove(groupID);
+
+		// notify
+		this.notifyLeftGroup(groupID);
+	}
+
+	@Override
+	public void storeGroup(Integer groupID)
+	{
+		// Store the given group id
+		this.groups.add(groupID);
+
+		this.notifyJoinedGroup(groupID);
+	}
+
+	@Override
+	public void notifyStoredScene(Integer sceneNumber)
+	{
+		// send the store scene notification
+		((OnOffOutput) this.device).notifyStoredScene(sceneNumber);
 
 	}
 
 	@Override
-	public void deleteGroup(String groupID)
+	public void notifyDeletedScene(Integer sceneNumber)
 	{
-		// intentionally left empty
+		// send the delete scene notification
+		((OnOffOutput) this.device).notifyDeletedScene(sceneNumber);
 
 	}
 
 	@Override
-	public void storeGroup(String groupID)
+	public void notifyJoinedGroup(Integer groupNumber)
 	{
-		// intentionally left empty
+		// send the joined group notification
+		((OnOffOutput) this.device).notifyJoinedGroup(groupNumber);
+
+	}
+
+	@Override
+	public void notifyLeftGroup(Integer groupNumber)
+	{
+		// send the left group notification
+		((OnOffOutput) this.device).notifyLeftGroup(groupNumber);
 
 	}
 
@@ -244,13 +300,6 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 	}
 
 	@Override
-	public void notifyStateChanged(State newState)
-	{
-		((ElectricalSystem) this.device).notifyStateChanged(newState);
-
-	}
-
-	@Override
 	public Measure<?, ?> getReactiveEnergyValue()
 	{
 		// TODO Auto-generated method stub
@@ -296,7 +345,6 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 		// notify the new measure
 		((MeteringPowerOutlet) this.device)
 				.notifyNewActivePowerValue(powerValue);
-
 
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
@@ -346,7 +394,6 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 		// notify the new measure
 		((MeteringPowerOutlet) this.device).notifyNewActiveEnergyValue(value);
 
-
 		// debug
 		this.logger.log(LogService.LOG_DEBUG,
 				ZigBeeMeteringPowerOutletDriver.logId
@@ -371,6 +418,25 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 				ZigBeeMeteringPowerOutletDriver.logId
 						+ "Notifying power factor value: " + powerFactor);
 
+	}
+
+	@Override
+	public void notifyOn()
+	{
+		((OnOffOutput) this.device).notifyOn();
+
+	}
+
+	@Override
+	public void notifyOff()
+	{
+		((OnOffOutput) this.device).notifyOff();
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable) this.device).updateStatus();
 	}
 
 	/*
@@ -439,9 +505,17 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 			boolean on = (Boolean) attributeValue.getValue();
 
 			if (on)
+			{
 				this.changeCurrentState(OnOffState.ON);
+
+				this.notifyOn();
+			}
 			else
+			{
 				this.changeCurrentState(OnOffState.OFF);
+
+				this.notifyOff();
+			}
 		}
 		else if (clusterName.equals(SimpleMeteringServer.class.getName()))
 		{
@@ -501,9 +575,8 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 			}
 
 		}
-		
-		
-		this.notifyStateChanged(null);
+
+		this.updateStatus();
 
 	}
 
@@ -629,7 +702,7 @@ public class ZigBeeMeteringPowerOutletDriverInstance extends ZigBeeDriverInstanc
 			{
 				newState = new OnOffState(new OffStateValue());
 			}
-			// ... then set the new state for the device 
+			// ... then set the new state for the device
 			this.currentState.setState(newState.getStateName(), newState);
 		}
 

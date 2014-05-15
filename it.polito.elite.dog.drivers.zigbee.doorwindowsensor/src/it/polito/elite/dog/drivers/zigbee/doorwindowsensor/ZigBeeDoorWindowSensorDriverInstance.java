@@ -20,11 +20,10 @@ package it.polito.elite.dog.drivers.zigbee.doorwindowsensor;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.DoorSensor;
-import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
 import it.polito.elite.dog.core.library.model.devicecategory.WindowSensor;
 import it.polito.elite.dog.core.library.model.state.OpenCloseState;
-import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.CloseStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.OpenStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
@@ -161,13 +160,6 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 		this.initializeStates();
 	}
 
-	@Override
-	public void notifyStateChanged(State newState)
-	{
-		((ElectricalSystem) this.device).notifyStateChanged(newState);
-
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -251,7 +243,7 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 					this.notifyClose();
 				
 				//notify the state change
-				this.notifyStateChanged(null);
+				this.updateStatus();
 
 			}
 		}
@@ -458,6 +450,13 @@ public class ZigBeeDoorWindowSensorDriverInstance extends ZigBeeDriverInstance
 	public void setConnectionAdmin(IConnectionAdminService connectionAdmin)
 	{
 		this.connectionAdmin = connectionAdmin;
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable)this.device).updateStatus();
+		
 	}
 
 }

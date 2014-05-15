@@ -19,10 +19,9 @@ package it.polito.elite.dog.drivers.zigbee.movementsensor;
 
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.MovementSensor;
 import it.polito.elite.dog.core.library.model.state.MovementState;
-import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.MovingStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.NotMovingStateValue;
 import it.polito.elite.dog.core.library.util.LogHelper;
@@ -147,13 +146,6 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 		this.initializeStates();
 	}
 
-	@Override
-	public void notifyStateChanged(State newState)
-	{
-		((ElectricalSystem) this.device).notifyStateChanged(newState);
-
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -232,12 +224,12 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 
 				// notify the new value
 				if (valueAsInt > 0)
-					this.notifyDetectedMovement();
+					this.notifyStartedMovement();
 				else
 					this.notifyCeasedMovement();
 				
 				//notify the state change
-				this.notifyStateChanged(null);
+				this.updateStatus();
 
 			}
 		}
@@ -378,7 +370,7 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 	}
 
 	@Override
-	public void notifyDetectedMovement()
+	public void notifyStartedMovement()
 	{
 		// update the state
 		MovementState movState = new MovementState(new MovingStateValue());
@@ -392,7 +384,7 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 						+ ((MovementState) movState).getCurrentStateValue()[0]
 								.getValue());
 
-		((MovementSensor) device).notifyDetectedMovement();
+		((MovementSensor) device).notifyStartedMovement();
 
 	}
 
@@ -404,6 +396,12 @@ public class ZigBeeMovementSensorDriverInstance extends ZigBeeDriverInstance
 	public void setConnectionAdmin(IConnectionAdminService connectionAdmin)
 	{
 		this.connectionAdmin = connectionAdmin;
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable)this.device).updateStatus();
 	}
 
 }

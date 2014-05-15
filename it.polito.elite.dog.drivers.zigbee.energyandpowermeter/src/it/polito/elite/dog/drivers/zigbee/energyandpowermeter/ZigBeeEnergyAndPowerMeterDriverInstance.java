@@ -21,7 +21,7 @@ package it.polito.elite.dog.drivers.zigbee.energyandpowermeter;
 import it.polito.elite.dog.core.library.model.CNParameters;
 import it.polito.elite.dog.core.library.model.ControllableDevice;
 import it.polito.elite.dog.core.library.model.DeviceStatus;
-import it.polito.elite.dog.core.library.model.devicecategory.ElectricalSystem;
+import it.polito.elite.dog.core.library.model.devicecategory.Controllable;
 import it.polito.elite.dog.core.library.model.devicecategory.EnergyAndPowerMeter;
 import it.polito.elite.dog.core.library.model.notification.SinglePhaseActiveEnergyMeasurementNotification;
 import it.polito.elite.dog.core.library.model.notification.SinglePhaseActivePowerMeasurementNotification;
@@ -30,7 +30,6 @@ import it.polito.elite.dog.core.library.model.state.OnOffState;
 import it.polito.elite.dog.core.library.model.state.SinglePhaseActiveEnergyState;
 import it.polito.elite.dog.core.library.model.state.SinglePhaseActivePowerMeasurementState;
 import it.polito.elite.dog.core.library.model.state.SinglePhaseReactiveEnergyState;
-import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.model.statevalue.ActiveEnergyStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.ActivePowerStateValue;
 import it.polito.elite.dog.core.library.model.statevalue.OnStateValue;
@@ -115,22 +114,6 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 	public DeviceStatus getState()
 	{
 		return this.currentState;
-	}
-
-	@Override
-	public void notifyStateChanged(State newState)
-	{
-		// debug
-		/*this.logger.log(
-				LogService.LOG_DEBUG,
-				ZigBeeEnergyAndPowerMeterDriver.logId
-						+ "Device "
-						+ this.device.getDeviceId()
-						+ " is now "
-						+ ((OnOffState) newState).getCurrentStateValue()[0]
-								.getValue());*/
-		((ElectricalSystem) this.device).notifyStateChanged(newState);
-
 	}
 
 	@Override
@@ -313,7 +296,7 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 
 			}
 			
-			this.notifyStateChanged(null);
+			this.updateStatus();
 
 		}
 
@@ -574,6 +557,12 @@ public class ZigBeeEnergyAndPowerMeterDriverInstance extends ZigBeeDriverInstanc
 				this.logger.log(LogService.LOG_DEBUG,
 						"Subscripion not accepted");
 		}
+	}
+
+	@Override
+	public void updateStatus()
+	{
+		((Controllable)this.device).updateStatus();		
 	}
 
 }
