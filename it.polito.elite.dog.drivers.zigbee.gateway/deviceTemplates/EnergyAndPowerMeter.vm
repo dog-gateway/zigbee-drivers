@@ -37,16 +37,6 @@
 					</dhc:command>
 				</dhc:commands>
 			</dhc:controlFunctionality>
-			<dhc:notificationFunctionality class="StateChangeNotificationFunctionality">
-				<dhc:notifications>
-					<dhc:notification name="StateChangeNotification_1"
-						class="StateChangeNotification">
-						<dhc:param value="1" name="nParams" />
-						<dhc:param value="stateChanged" name="notificationName" />
-						<dhc:param type="State" value="newState" name="notificationParamName" />
-					</dhc:notification>
-				</dhc:notifications>
-			</dhc:notificationFunctionality>
 			<dhc:notificationFunctionality
 				class="SinglePhaseReactiveEnergyMeasurementNotificationFunctionality">
 				<dhc:notifications>
