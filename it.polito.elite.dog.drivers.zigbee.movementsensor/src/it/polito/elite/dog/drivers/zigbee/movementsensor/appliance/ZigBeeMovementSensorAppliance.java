@@ -19,10 +19,10 @@ package it.polito.elite.dog.drivers.zigbee.movementsensor.appliance;
 
 import java.util.Dictionary;
 
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.IApplianceDescriptor;
-import it.telecomitalia.ah.hac.lib.Appliance;
-import it.telecomitalia.ah.hac.lib.ApplianceDescriptor;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.IApplianceDescriptor;
+import org.energy_home.jemma.ah.hac.lib.Appliance;
+import org.energy_home.jemma.ah.hac.lib.ApplianceDescriptor;
 
 /**
  * @author bonino

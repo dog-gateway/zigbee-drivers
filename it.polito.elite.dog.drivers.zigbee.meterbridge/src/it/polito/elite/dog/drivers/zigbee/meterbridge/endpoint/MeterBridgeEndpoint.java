@@ -19,8 +19,8 @@
 package it.polito.elite.dog.drivers.zigbee.meterbridge.endpoint;
 
 import it.polito.elite.dog.drivers.zigbee.meterbridge.appliance.BridgedMeteringAppliance;
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.lib.EndPoint;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.lib.EndPoint;
 
 
 /**

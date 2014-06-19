@@ -23,8 +23,8 @@ import it.polito.elite.dog.core.library.model.devicecategory.MeteringPowerOutlet
 import it.polito.elite.dog.drivers.zigbee.device.ZigBeeDeviceDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
-import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
+import org.energy_home.jemma.ah.cluster.zigbee.general.OnOffServer;
+import org.energy_home.jemma.ah.cluster.zigbee.metering.SimpleMeteringServer;
 
 import org.osgi.framework.BundleContext;
 

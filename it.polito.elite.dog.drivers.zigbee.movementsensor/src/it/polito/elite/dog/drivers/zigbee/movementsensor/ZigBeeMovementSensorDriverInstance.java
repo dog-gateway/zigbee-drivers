@@ -31,18 +31,18 @@ import it.polito.elite.dog.drivers.zigbee.movementsensor.endpoint.ZigBeeMovement
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.measurement.OccupancySensingServer;
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.IAppliance;
-import it.telecomitalia.ah.hac.IAttributeValue;
-import it.telecomitalia.ah.hac.IEndPoint;
-import it.telecomitalia.ah.hac.IEndPointRequestContext;
-import it.telecomitalia.ah.hac.IManagedAppliance;
-import it.telecomitalia.ah.hac.IServiceCluster;
-import it.telecomitalia.ah.hac.ISubscriptionParameters;
-import it.telecomitalia.ah.hac.ServiceClusterException;
-import it.telecomitalia.ah.hac.lib.SubscriptionParameters;
-import it.telecomitalia.ah.hac.lib.ext.IConnectionAdminService;
+import org.energy_home.jemma.ah.cluster.zigbee.measurement.OccupancySensingServer;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.IAppliance;
+import org.energy_home.jemma.ah.hac.IAttributeValue;
+import org.energy_home.jemma.ah.hac.IEndPoint;
+import org.energy_home.jemma.ah.hac.IEndPointRequestContext;
+import org.energy_home.jemma.ah.hac.IManagedAppliance;
+import org.energy_home.jemma.ah.hac.IServiceCluster;
+import org.energy_home.jemma.ah.hac.ISubscriptionParameters;
+import org.energy_home.jemma.ah.hac.ServiceClusterException;
+import org.energy_home.jemma.ah.hac.lib.SubscriptionParameters;
+import org.energy_home.jemma.ah.hac.lib.ext.IConnectionAdminService;
 
 import java.util.Hashtable;
 

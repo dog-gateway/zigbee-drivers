@@ -27,8 +27,8 @@ import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeDriverInfo;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.hac.lib.ext.IAppliancesProxy;
-import it.telecomitalia.ah.hac.lib.ext.INetworkManager;
+import org.energy_home.jemma.ah.hac.lib.ext.IAppliancesProxy;
+import org.energy_home.jemma.ah.hac.lib.ext.INetworkManager;
 
 import java.util.Collections;
 import java.util.HashSet;

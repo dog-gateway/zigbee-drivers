@@ -20,12 +20,12 @@ package it.polito.elite.dog.drivers.zigbee.movementsensor.cluster;
 import it.polito.elite.dog.core.library.model.state.MovementState;
 import it.polito.elite.dog.core.library.model.statevalue.MovingStateValue;
 import it.polito.elite.dog.drivers.zigbee.movementsensor.ZigBeeMovementSensorDriverInstance;
-import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.IEndPointRequestContext;
-import it.telecomitalia.ah.hac.ServiceClusterException;
-import it.telecomitalia.ah.hac.lib.Appliance;
-import it.telecomitalia.ah.hac.lib.ServiceCluster;
+import org.energy_home.jemma.ah.cluster.zigbee.general.OnOffServer;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.IEndPointRequestContext;
+import org.energy_home.jemma.ah.hac.ServiceClusterException;
+import org.energy_home.jemma.ah.hac.lib.Appliance;
+import org.energy_home.jemma.ah.hac.lib.ServiceCluster;
 
 /**
  * @author bonino

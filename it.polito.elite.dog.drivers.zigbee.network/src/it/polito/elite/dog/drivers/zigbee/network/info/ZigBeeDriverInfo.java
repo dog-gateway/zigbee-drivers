@@ -5,10 +5,10 @@ package it.polito.elite.dog.drivers.zigbee.network.info;
 
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.util.Sets;
-import it.telecomitalia.ah.cluster.ah.ConfigServer;
-import it.telecomitalia.ah.cluster.zigbee.general.BasicServer;
-import it.telecomitalia.ah.cluster.zigbee.general.IdentifyServer;
-//import it.telecomitalia.ah.cluster.zigbee.general.TimeClient;
+import org.energy_home.jemma.ah.cluster.ah.ConfigServer;
+import org.energy_home.jemma.ah.cluster.zigbee.general.BasicServer;
+import org.energy_home.jemma.ah.cluster.zigbee.general.IdentifyServer;
+//import org.energy_home.jemma.ah.cluster.zigbee.general.TimeClient;
 
 import java.util.Collections;
 import java.util.HashSet;

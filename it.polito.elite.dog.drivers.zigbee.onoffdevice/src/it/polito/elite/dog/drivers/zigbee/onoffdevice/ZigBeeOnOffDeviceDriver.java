@@ -23,7 +23,7 @@ import it.polito.elite.dog.core.library.model.devicecategory.OnOffOutput;
 import it.polito.elite.dog.drivers.zigbee.device.ZigBeeDeviceDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.general.OnOffServer;
+import org.energy_home.jemma.ah.cluster.zigbee.general.OnOffServer;
 
 import org.osgi.framework.BundleContext;
 

@@ -36,9 +36,9 @@ import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeDriverInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ApplianceDiscoveryListener;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
 import it.polito.elite.dog.drivers.zigbee.network.util.DriverIntersectionData;
-import it.telecomitalia.ah.hac.IAttributeValue;
-import it.telecomitalia.ah.hac.lib.ext.IAppliancesProxy;
-import it.telecomitalia.ah.hac.lib.ext.INetworkManager;
+import org.energy_home.jemma.ah.hac.IAttributeValue;
+import org.energy_home.jemma.ah.hac.lib.ext.IAppliancesProxy;
+import org.energy_home.jemma.ah.hac.lib.ext.INetworkManager;
 
 import java.util.HashMap;
 import java.util.Set;

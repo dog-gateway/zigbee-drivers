@@ -28,11 +28,11 @@ import it.polito.elite.dog.core.library.model.state.SinglePhaseActivePowerMeasur
 import it.polito.elite.dog.core.library.model.state.State;
 import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.drivers.zigbee.meterbridge.appliance.BridgedMeteringAppliance;
-import it.telecomitalia.ah.cluster.zigbee.metering.SimpleMeteringServer;
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.IEndPointRequestContext;
-import it.telecomitalia.ah.hac.ServiceClusterException;
-import it.telecomitalia.ah.hac.lib.ServiceCluster;
+import org.energy_home.jemma.ah.cluster.zigbee.metering.SimpleMeteringServer;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.IEndPointRequestContext;
+import org.energy_home.jemma.ah.hac.ServiceClusterException;
+import org.energy_home.jemma.ah.hac.lib.ServiceCluster;
 
 import java.math.BigDecimal;
 

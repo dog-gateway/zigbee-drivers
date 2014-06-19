@@ -18,9 +18,9 @@
  */
 package it.polito.elite.dog.drivers.zigbee.doorwindowsensor.endpoint;
 
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.lib.Appliance;
-import it.telecomitalia.ah.hac.lib.EndPoint;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.lib.Appliance;
+import org.energy_home.jemma.ah.hac.lib.EndPoint;
 
 /**
  * A custom {@link EndPoint} retaining a pointer to the appliance to which

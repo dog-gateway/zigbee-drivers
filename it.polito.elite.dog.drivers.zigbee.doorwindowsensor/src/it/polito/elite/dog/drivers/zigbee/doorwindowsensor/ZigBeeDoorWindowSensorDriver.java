@@ -28,9 +28,9 @@ import it.polito.elite.dog.core.library.model.devicecategory.WindowSensor;
 import it.polito.elite.dog.drivers.zigbee.device.ZigBeeDeviceDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.general.OnOffClient;
-import it.telecomitalia.ah.cluster.zigbee.security.IASZoneServer;
-import it.telecomitalia.ah.hac.lib.ext.IConnectionAdminService;
+import org.energy_home.jemma.ah.cluster.zigbee.general.OnOffClient;
+import org.energy_home.jemma.ah.cluster.zigbee.security.IASZoneServer;
+import org.energy_home.jemma.ah.hac.lib.ext.IConnectionAdminService;
 
 /**
  * <p>

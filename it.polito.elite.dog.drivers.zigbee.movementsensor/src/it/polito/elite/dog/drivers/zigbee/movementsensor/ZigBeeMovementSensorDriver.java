@@ -22,8 +22,8 @@ import it.polito.elite.dog.core.library.model.devicecategory.MovementSensor;
 import it.polito.elite.dog.drivers.zigbee.device.ZigBeeDeviceDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.measurement.OccupancySensingServer;
-import it.telecomitalia.ah.hac.lib.ext.IConnectionAdminService;
+import org.energy_home.jemma.ah.cluster.zigbee.measurement.OccupancySensingServer;
+import org.energy_home.jemma.ah.hac.lib.ext.IConnectionAdminService;
 
 import java.util.concurrent.atomic.AtomicReference;
 

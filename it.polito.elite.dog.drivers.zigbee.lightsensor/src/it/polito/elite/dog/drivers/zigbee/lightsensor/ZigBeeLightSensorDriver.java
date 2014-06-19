@@ -22,7 +22,7 @@ import it.polito.elite.dog.core.library.model.devicecategory.LightSensor;
 import it.polito.elite.dog.drivers.zigbee.device.ZigBeeDeviceDriver;
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.cluster.zigbee.measurement.IlluminanceMeasurementServer;
+import org.energy_home.jemma.ah.cluster.zigbee.measurement.IlluminanceMeasurementServer;
 
 import org.osgi.framework.BundleContext;
 

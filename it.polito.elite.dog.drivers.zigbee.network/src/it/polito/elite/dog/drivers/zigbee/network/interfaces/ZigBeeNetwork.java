@@ -20,7 +20,7 @@ package it.polito.elite.dog.drivers.zigbee.network.interfaces;
 
 import it.polito.elite.dog.drivers.zigbee.network.ZigBeeDriverInstance;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
-import it.telecomitalia.ah.hac.IAppliance;
+import org.energy_home.jemma.ah.hac.IAppliance;
 
 /**
  * @author bonino

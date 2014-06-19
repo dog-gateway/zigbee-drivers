@@ -7,5 +7,5 @@
    <reference bind="addedNetworkDriver" cardinality="1..1" interface="it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork" name="ZigBeeNetwork" policy="dynamic" unbind="removedNetworkDriver"/>
    <reference bind="addedGatewayDriver" cardinality="1..1" interface="it.polito.elite.dog.drivers.zigbee.gateway.ZigBeeGatewayDriver" name="ZigBeeGatewayDriver" policy="dynamic" unbind="removedGatewayDriver"/>
    <property name="service.pid" type="String" value="it.polito.elite.dog.drivers.zigbee.lightsensor"/>
- <reference bind="addedConnectionAdminService" cardinality="1..1" interface="it.telecomitalia.ah.hac.lib.ext.IConnectionAdminService" name="IConnectionAdminService" policy="dynamic" unbind="removedConnectionAdminService"/>
+ <reference bind="addedConnectionAdminService" cardinality="1..1" interface="org.energy_home.jemma.ah.hac.lib.ext.IConnectionAdminService" name="IConnectionAdminService" policy="dynamic" unbind="removedConnectionAdminService"/>
 </scr:component>

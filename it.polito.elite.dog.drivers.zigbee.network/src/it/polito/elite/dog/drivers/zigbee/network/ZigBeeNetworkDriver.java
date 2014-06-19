@@ -22,12 +22,12 @@ import it.polito.elite.dog.core.library.util.LogHelper;
 import it.polito.elite.dog.drivers.zigbee.network.info.ZigBeeApplianceInfo;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ApplianceDiscoveryListener;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.hac.IAppliance;
-import it.telecomitalia.ah.hac.IApplicationEndPoint;
-import it.telecomitalia.ah.hac.IApplicationService;
-import it.telecomitalia.ah.hac.IAttributeValue;
-import it.telecomitalia.ah.hac.IAttributeValuesListener;
-import it.telecomitalia.ah.hac.IServiceCluster;
+import org.energy_home.jemma.ah.hac.IAppliance;
+import org.energy_home.jemma.ah.hac.IApplicationEndPoint;
+import org.energy_home.jemma.ah.hac.IApplicationService;
+import org.energy_home.jemma.ah.hac.IAttributeValue;
+import org.energy_home.jemma.ah.hac.IAttributeValuesListener;
+import org.energy_home.jemma.ah.hac.IServiceCluster;
 
 import java.util.Dictionary;
 import java.util.HashSet;

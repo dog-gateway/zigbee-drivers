@@ -2,9 +2,9 @@
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="ZigBeeNetworkDriver">
    <implementation class="it.polito.elite.dog.drivers.zigbee.network.ZigBeeNetworkDriver"/>
    <service>
-      <provide interface="it.telecomitalia.ah.hac.IApplicationService"/>
+      <provide interface="org.energy_home.jemma.ah.hac.IApplicationService"/>
       <provide interface="org.osgi.service.cm.ManagedService"/>
-      <provide interface="it.telecomitalia.ah.hac.IAttributeValuesListener"/>
+      <provide interface="org.energy_home.jemma.ah.hac.IAttributeValuesListener"/>
    </service>
    <property name="service.pid" type="String" value="it.polito.elite.dog.drivers.zigbee.network"/>
 </scr:component>

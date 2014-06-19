@@ -27,9 +27,9 @@ import it.polito.elite.dog.drivers.zigbee.meterbridge.appliance.BridgedMeteringA
 import it.polito.elite.dog.drivers.zigbee.meterbridge.cluster.MeterBridgeSimpleMeteringServerCluster;
 import it.polito.elite.dog.drivers.zigbee.meterbridge.endpoint.MeterBridgeEndpoint;
 import it.polito.elite.dog.drivers.zigbee.network.interfaces.ZigBeeNetwork;
-import it.telecomitalia.ah.hac.ApplianceException;
-import it.telecomitalia.ah.hac.IAppliance;
-import it.telecomitalia.ah.hac.IManagedAppliance;
+import org.energy_home.jemma.ah.hac.ApplianceException;
+import org.energy_home.jemma.ah.hac.IAppliance;
+import org.energy_home.jemma.ah.hac.IManagedAppliance;
 
 import java.util.Collections;
 import java.util.Dictionary;

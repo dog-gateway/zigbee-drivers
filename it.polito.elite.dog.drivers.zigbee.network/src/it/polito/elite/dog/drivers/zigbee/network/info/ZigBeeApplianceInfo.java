@@ -21,10 +21,10 @@ package it.polito.elite.dog.drivers.zigbee.network.info;
 import java.util.Collections;
 import java.util.HashSet;
 
-import it.telecomitalia.ah.hac.IAppliance;
-import it.telecomitalia.ah.hac.IApplicationEndPoint;
-import it.telecomitalia.ah.hac.IEndPoint;
-import it.telecomitalia.ah.hac.IServiceCluster;
+import org.energy_home.jemma.ah.hac.IAppliance;
+import org.energy_home.jemma.ah.hac.IApplicationEndPoint;
+import org.energy_home.jemma.ah.hac.IEndPoint;
+import org.energy_home.jemma.ah.hac.IServiceCluster;
 
 /**
  * A class used to store information about zigbee appliances, in particular the
