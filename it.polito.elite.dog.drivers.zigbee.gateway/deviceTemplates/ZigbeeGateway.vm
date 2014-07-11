@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dhc:dogHomeConfiguration xmlns:dhc="http://elite.polito.it/dogHomeConfiguration">
+	<dhc:controllables>
+		<dhc:device class="ZigBeeGateway" id="$name"
+			domoticSystem="ZigBee">
+			<dhc:description>$description</dhc:description>
+			<dhc:isIn>$location</dhc:isIn>
+			<dhc:controlFunctionality class="NetworkManagementFunctionality">
+                <dhc:commands>
+                    <dhc:command class="OpenNetworkCommand" name="OpenNetworkCommand_$name" id="OpenNetworkCommand_$name">
+                        <dhc:param name="realCommandName" value="openNetwork"/>
+                    </dhc:command>
+                    <dhc:command class="CloseNetworkCommand" name="CloseNetworkCommand_$name" id="CloseNetworkCommand_$name">
+                        <dhc:param name="realCommandName" value="closeNetwork"/>
+                    </dhc:command>
+                </dhc:commands>
+            </dhc:controlFunctionality>
+            <dhc:controlFunctionality class="ApplianceManagementFunctionality">
+                <dhc:commands>
+                    <dhc:command class="InstallApplianceCommand" name="InstallApplianceCommand_$name" id="InstallApplianceCommand_$name">
+                        <dhc:param name="realCommandName" value="installAppliance"/>
+                        <dhc:param name="nParams" value="1"/>
+                        <dhc:param name="commandParamName" value="applianceId"/>
+                    </dhc:command>
+                    <dhc:command class="DeleteApplianceCommand" name="DeleteApplianceCommand_$name" id="DeleteApplianceCommand_$name">
+                        <dhc:param name="realCommandName" value="deleteAppliance"/>
+                        <dhc:param name="nParams" value="1"/>
+                        <dhc:param name="commandParamName" value="applianceId"/>
+                    </dhc:command>
+                </dhc:commands>
+            </dhc:controlFunctionality>
+			<dhc:notificationFunctionality class="NetworkManagementNotificationFunctionality">
+				<dhc:notifications>
+					<dhc:notification id="NetworkClosedNotification_$name" class="NetworkClosedNotification">
+						<dhc:param name="nParams" value="0"/>
+						<dhc:param value="close" name="notificationName" />
+					</dhc:notification>
+					<dhc:notification id="NetworkOpenedNotification_$name" class="NetworkOpenedNotification">
+						<dhc:param name="nParams" value="0"/>
+						<dhc:param value="open" name="notificationName" />
+					</dhc:notification>
+				</dhc:notifications>
+			</dhc:notificationFunctionality>			
+		</dhc:device>
+	</dhc:controllables>
+</dhc:dogHomeConfiguration>
