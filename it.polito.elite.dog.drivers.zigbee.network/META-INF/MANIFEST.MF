@@ -21,3 +21,4 @@ Export-Package: it.polito.elite.dog.drivers.zigbee.network,
  it.polito.elite.dog.drivers.zigbee.network.info,
  it.polito.elite.dog.drivers.zigbee.network.interfaces,
  it.polito.elite.dog.drivers.zigbee.network.util
+Bundle-ActivationPolicy: lazy
